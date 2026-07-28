@@ -19,16 +19,18 @@ I've been prototyping this for almost a year now and this is the third or fourth
 
 ## Adding To Your Browser
 
-The steps are slightly different between browsers.
+The steps are slightly different between browsers, but they both start the same way:
+
+`bun install`
+`bun run release`
+
+That builds the extension and hands you a clean, ready-to-load folder per browser: `dist-chrome/` and `dist-firefox/`, each with a single `manifest.json`.
+It also drops a matching `.zip` next to each in case you want to hand one off; pass `--no-zip` if you don't care about those, or `--target chrome` / `--target firefox` if you only want one.
 
 ### Chrome
 
-`bun run install`
-`bun run build`
-
-Take note of where your build directory is.
 Open the chrome extension manager and toggle on developer mode in the top right.
-Press "Load Unpacked" and select the build directory (dist).
+Press "Load Unpacked" and select `dist-chrome`.
 
 For the extension to be enabled in your tabs, you need to reload them.
 
@@ -37,11 +39,10 @@ To set the toggle hotkey, hit keyboard shortcuts in the extension manager and se
 
 ### Firefox
 
-`bun run install`
-`bun run build:firefox`
-
 Go to "about:addons" and click the settings gear button to the right of the "Manage Your Extensions" title.
-Hit install add ons from file and then select "manifest.json" inside of dist.
+Hit install add ons from file and then select "manifest.json" inside `dist-firefox`.
+
+If you want to sanity-check the Firefox build the way the store will, `bun run verify:firefox` builds it and runs web-ext's linter over it.
 
 ## Roadmap
 
