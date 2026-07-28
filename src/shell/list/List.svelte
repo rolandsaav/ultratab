@@ -32,6 +32,10 @@
      * just filters its own items off the bound query. */
     onSearchChange?: (query: string) => void;
     onRefresh?: () => void;
+    /** Drop the row with this id — for `remove` actions that don't warrant a full refresh. */
+    onRemove?: (id: string) => void;
+    /** Left-aligned footer text for this view, e.g. a result count. */
+    footerInfo?: string;
     children: Snippet;
   }
   let {
@@ -41,6 +45,8 @@
     header,
     onSearchChange,
     onRefresh,
+    onRemove,
+    footerInfo,
     children,
   }: Props = $props();
 
@@ -62,11 +68,13 @@
     actionsOpen ? registry.get(actionTargetId) : undefined,
   );
 
-  // Keep the shell footer showing the highlighted row's primary action.
+  // Sync the shell footer for this view. Every view uses List, so mounting one
+  // overwrites the previous view's values — no manual reset.
   $effect(() => {
     const actions = highlightedEntry?.actions;
     footer.primaryLabel = actions?.primary.title;
     footer.hasActions = !!actions && hasSecondaryActions(actions);
+    footer.info = footerInfo;
   });
 
   // Own Escape only while the panel is open, so it closes before the shell steps back a view.
@@ -90,11 +98,39 @@
     actionsOpen = false;
   }
 
+  // Step the highlight off the row about to be removed, so selection and scroll
+  // don't reset. Down, or up on the last row (which `loop` would wrap to the top);
+  // bits-ui updates the bound `highlightedId`.
+  function stepHighlightOffCurrent(): void {
+    const items = commandRoot?.getValidItems() ?? [];
+    if (items.length <= 1) return;
+    const idx = items.findIndex((el) => el.hasAttribute('data-selected'));
+    if (idx < 0) return;
+    const atLast = idx === items.length - 1;
+    commandRoot?.updateSelectedByItem(atLast ? -1 : 1);
+  }
+
+  // Run a row's command; if it removes the highlighted row, step off it first.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- rows hold heterogeneous subjects
+  function runRow(command: PaletteCommand<any>, id: string): void {
+    const entry = registry.get(id);
+    if (!entry) return;
+    const removing =
+      command.run.kind === 'perform' && command.run.after === 'remove';
+    if (removing && id === highlightedId) {
+      stepHighlightOffCurrent();
+    }
+    void runCommand(command, entry.subject, {
+      onRefresh,
+      onRemove: () => onRemove?.(id),
+    });
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- panel commands act on heterogeneous subjects
   function runFromPanel(command: PaletteCommand<any>): void {
-    const entry = registry.get(actionTargetId);
+    const id = actionTargetId;
     closeActions();
-    if (entry) void runCommand(command, entry.subject, onRefresh);
+    runRow(command, id);
   }
 
   setListContext({
@@ -102,10 +138,13 @@
     unregister: (id) => registry.delete(id),
     select: (id) => {
       const entry = registry.get(id);
-      if (entry)
-        void runCommand(entry.actions.primary, entry.subject, onRefresh);
+      if (entry) runRow(entry.actions.primary, id);
     },
     openActions,
+    runInline: (id) => {
+      const inline = registry.get(id)?.actions.inline;
+      if (inline) runRow(inline, id);
+    },
   });
 
   function onInput(value: string): void {
@@ -124,7 +163,7 @@
       const match = matchAction(e, allActions(entry.actions));
       if (match) {
         e.preventDefault();
-        void runCommand(match, entry.subject, onRefresh);
+        runRow(match, highlightedId);
         return;
       }
     }

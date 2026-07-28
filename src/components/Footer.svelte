@@ -3,14 +3,18 @@
   import { OPEN_ACTIONS_SHORTCUT, PRIMARY_SHORTCUT } from './utils.svelte';
 
   interface Props {
+    info?: string;
     primaryLabel?: string;
     hasActions?: boolean;
   }
 
-  let { primaryLabel, hasActions = false }: Props = $props();
+  let { info, primaryLabel, hasActions = false }: Props = $props();
 </script>
 
 <div class="footer">
+  {#if info}
+    <span class="footer-info">{info}</span>
+  {/if}
   {#if primaryLabel}
     <span class="hint hint-primary"
       >{primaryLabel}<KeyCombo shortcut={PRIMARY_SHORTCUT} /></span

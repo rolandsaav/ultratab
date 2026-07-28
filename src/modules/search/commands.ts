@@ -49,7 +49,7 @@ const closeTab = action<Item>({
   icon: X,
   shortcut: { mod: true, key: 'Backspace' },
   do: (tab) => searchApi.closeTab(tab.id),
-  after: 'stay',
+  after: 'remove',
 });
 
 const duplicateTab = action<Item>({
@@ -134,6 +134,7 @@ export function commandsForItem(item: Item): RowActions<Item> {
   if (item.kind === 'tab') {
     return {
       primary: activateTab,
+      inline: closeTab,
       secondary: [
         closeTab,
         copyUrl,

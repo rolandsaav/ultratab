@@ -29,4 +29,19 @@
   class="item"
 >
   {@render children()}
+  {#if actions.inline}
+    {@const Icon = actions.inline.icon}
+    <button
+      type="button"
+      class="item-action"
+      title={actions.inline.title}
+      aria-label={actions.inline.title}
+      onclick={(e) => {
+        e.stopPropagation();
+        ctx.runInline(id);
+      }}
+    >
+      <Icon size={16} />
+    </button>
+  {/if}
 </Command.Item>

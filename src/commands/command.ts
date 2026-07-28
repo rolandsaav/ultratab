@@ -25,10 +25,14 @@ export interface Command<T = void> {
   run: CommandRun<T>;
 }
 
+/** What happens to the palette after a perform: dismiss (`close`), refresh in place
+ * (`stay`), or drop the acted row and reselect its neighbour (`remove`). */
+export type PerformAfter = 'close' | 'stay' | 'remove';
+
 export type CommandRun<T> =
   | { kind: 'view'; view: View }
   | {
       kind: 'perform';
       perform: (subject: T) => Promise<void>;
-      after?: 'close' | 'stay';
+      after?: PerformAfter;
     };

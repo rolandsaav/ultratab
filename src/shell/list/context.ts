@@ -10,6 +10,7 @@ import type { Command } from '../../commands/command';
 export interface RowActions<T = any> {
   primary: Command<T>;
   secondary?: Command<T>[];
+  inline?: Command<T>;
 }
 
 /** A registered row: its actions plus the subject those actions act on. */
@@ -24,6 +25,7 @@ export interface ListContext {
   unregister(id: string): void;
   select(id: string): void;
   openActions(id: string): void;
+  runInline(id: string): void;
 }
 
 /** The List↔ListItem seam: `List` sets it, each `ListItem` gets it. */

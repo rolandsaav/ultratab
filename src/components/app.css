@@ -19,6 +19,7 @@
   --st-text: #ffffff;
   --st-text-muted: #a0a0a0;
   --st-error: #f38ba8;
+  --st-hover: rgba(255, 255, 255, 0.1);
 }
 
 .overlay {
@@ -28,6 +29,9 @@
   align-items: flex-start;
   justify-content: center;
   padding-top: 12vh;
+  /* Base color for the palette. Not on :host — the host node's inline `all: initial`
+     (page isolation) overrides it there, leaving `currentColor` icons black. */
+  color: var(--st-text);
   font-family:
     'Inter',
     system-ui,
@@ -144,7 +148,7 @@
 
 .back:hover,
 .back:focus-visible {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--st-hover);
   outline: none;
 }
 
@@ -184,7 +188,7 @@
 
 .source:focus-visible {
   outline: none;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--st-hover);
 }
 
 .source svg {
@@ -292,6 +296,35 @@
   color: var(--st-text-muted);
 }
 
+/* Inline row action, revealed on hover/highlight. Negative margin offsets the
+   padding so it doesn't grow the fixed row height. */
+.item-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0.25em;
+  margin: -0.25em;
+  border: none;
+  border-radius: 0.3em;
+  background: none;
+  color: var(--st-text-muted);
+  cursor: pointer;
+  opacity: 0;
+}
+
+.item:hover .item-action,
+.item[data-selected] .item-action {
+  opacity: 1;
+}
+
+.item-action:hover,
+.item-action:focus-visible {
+  color: var(--st-text);
+  background: var(--st-hover);
+  outline: none;
+}
+
 .title {
   color: var(--st-text);
   font-size: 0.875em;
@@ -326,6 +359,12 @@
   border-top: var(--st-border-w) solid var(--st-border);
   font-size: 0.75em;
   flex-shrink: 0;
+}
+
+/* Left-aligned status; the auto margin pushes the hints to the right edge. */
+.footer-info {
+  margin-right: auto;
+  color: var(--st-text-muted);
 }
 
 .footer .hint {
