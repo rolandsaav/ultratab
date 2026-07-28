@@ -1,6 +1,6 @@
 # Modules — how they work & how to add one
 
-**Audience:** anyone extending SuperTab with a new capability.
+**Audience:** anyone extending UltraTab with a new capability.
 **Companion:** `docs/modular-foundation.md` explains _why_ the architecture is shaped
 this way (the design and its decisions). This document is the _how-to_ — the concrete
 steps, files, and wiring to add a module. When the two disagree, the code wins; tell us so

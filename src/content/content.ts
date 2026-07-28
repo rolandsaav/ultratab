@@ -4,14 +4,14 @@ import { nav } from '../shell/nav.svelte';
 import { searchCommand } from '../modules/search/commands';
 import { TOGGLE_PALETTE, isPaletteCommand } from '../bridge/commands';
 
-const HOST_ID = 'supertab-host';
+const HOST_ID = 'ultratab-host';
 
-console.log('[SuperTab] Content script loaded');
+console.log('[UltraTab] Content script loaded');
 
 function init(): void {
-  console.log('[SuperTab] init() called, body exists:', !!document.body);
+  console.log('[UltraTab] init() called, body exists:', !!document.body);
   if (document.getElementById(HOST_ID)) {
-    console.log('[SuperTab] Host already exists');
+    console.log('[UltraTab] Host already exists');
     return;
   }
 
@@ -27,14 +27,14 @@ function init(): void {
     host.style.height = '0';
     host.style.zIndex = '2147483647';
     document.body.appendChild(host);
-    console.log('[SuperTab] Host created');
+    console.log('[UltraTab] Host created');
 
     const shadow = host.attachShadow({ mode: 'open' });
-    console.log('[SuperTab] Shadow root attached');
+    console.log('[UltraTab] Shadow root attached');
 
     // mountApp injects the styles into the shadow root.
     mountApp(shadow);
-    console.log('[SuperTab] App mounted');
+    console.log('[UltraTab] App mounted');
 
     const containKey = (e: Event) => {
       if (nav.visible) e.stopPropagation();
@@ -45,9 +45,9 @@ function init(): void {
 
     // Capture phase, to beat the browser's own key handling on focused elements.
     document.addEventListener('keydown', handleKeyDown, true);
-    console.log('[SuperTab] Escape listener attached');
+    console.log('[UltraTab] Escape listener attached');
   } catch (err) {
-    console.error('[SuperTab] Init failed:', err);
+    console.error('[UltraTab] Init failed:', err);
   }
 }
 

@@ -5,7 +5,7 @@ export default defineConfig({
   build: {
     lib: {
       entry: 'src/background/background.ts',
-      name: 'SuperTabBackground',
+      name: 'UltraTabBackground',
       formats: ['iife'],
       fileName: () => 'background.js',
     },

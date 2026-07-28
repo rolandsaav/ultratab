@@ -1,4 +1,4 @@
-# Super Tab MVP — Technical Specification
+# Ultra Tab MVP — Technical Specification
 
 **Version:** 1.0  
 **Date:** 2026-05-23  
@@ -10,7 +10,7 @@
 
 ### Document Objective
 
-Super Tab is a browser extension that replaces traditional tab-bar-driven navigation with a hotkey-triggered command palette. The MVP must be daily-driveable: it should feel faster and less obtrusive than Sideberry while supporting fuzzy search across tabs, history, and bookmarks with a keyboard-first workflow.
+Ultra Tab is a browser extension that replaces traditional tab-bar-driven navigation with a hotkey-triggered command palette. The MVP must be daily-driveable: it should feel faster and less obtrusive than Sideberry while supporting fuzzy search across tabs, history, and bookmarks with a keyboard-first workflow.
 
 ### Proposed Solution
 
@@ -36,7 +36,7 @@ A **Manifest V3 browser extension** with three layers:
 
 ### Success Metrics
 
-1. **Daily usage:** Author uses Super Tab as primary tab-navigation tool and stops using Sideberry.
+1. **Daily usage:** Author uses Ultra Tab as primary tab-navigation tool and stops using Sideberry.
 2. **Performance:** Palette opens in < 150 ms from hotkey press on a page with 50+ tabs.
 3. **Search quality:** Fuzzy ranking surfaces the intended result in the top 3 for > 90% of common queries.
 4. **Cross-browser:** Identical feature set and behavior in Chrome and Firefox with a single build.
@@ -192,7 +192,7 @@ supertab/
 
 ### Observability & Monitoring
 
-- **Console logging:** Background service worker logs API call errors to `console.error` with the `[SuperTab]` prefix.
+- **Console logging:** Background service worker logs API call errors to `console.error` with the `[UltraTab]` prefix.
 - **No external APM:** Not justified for a personal-use MVP.
 - **Runtime health check:** On mount, the Svelte app verifies the shadow root contains a `<style>` node. If absent, it logs a warning indicating the interceptor may have failed.
 
@@ -297,4 +297,4 @@ supertab/
 | **Bits UI**    | A headless Svelte component library (successor to Melt UI) providing accessible primitives.                      |
 | **Fuse.js**    | A lightweight fuzzy-search library for JavaScript.                                                               |
 | **IIFE**       | Immediately Invoked Function Expression — the bundle format for content scripts to avoid polluting global scope. |
-| **Sideberry**  | A Firefox extension for vertical tab management; the tool Super Tab aims to replace.                             |
+| **Sideberry**  | A Firefox extension for vertical tab management; the tool Ultra Tab aims to replace.                             |
