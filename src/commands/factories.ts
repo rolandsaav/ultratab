@@ -1,15 +1,15 @@
 import type { Component } from 'svelte';
-import type { Command, Shortcut } from './command';
+import type { Command, PerformAfter, Shortcut } from './command';
 import type { View } from '../shell/view';
 
-/** A perform command: run an effect on the subject, then close (default) or stay. */
+/** A perform command: run an effect on the subject, then apply its `after` outcome. */
 export function action<T>(o: {
   id: string;
   title: string;
   icon: Component;
   shortcut?: Shortcut;
   do: (subject: T) => Promise<void>;
-  after?: 'close' | 'stay';
+  after?: PerformAfter;
 }): Command<T> {
   return {
     id: o.id,

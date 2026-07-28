@@ -38,15 +38,23 @@
     }
   }
 
-  // Invalidate the cache, then re-run the last query — for entry and after a mutating
-  // action (e.g. closing a tab) so the closed item drops out.
+  // Drop the background cache so the next query refetches, surfacing any failure.
+  function invalidate(): Promise<void> {
+    return searchApi.prepare().catch((e) => {
+      status.error = toMessage(e, 'Failed to refresh');
+    });
+  }
+
+  // Invalidate then re-query — on entry and after an action that keeps the row (e.g. mute).
   function refresh(): void {
-    void searchApi
-      .prepare()
-      .then(() => runQuery(lastQuery))
-      .catch((e) => {
-        status.error = toMessage(e, 'Failed to refresh');
-      });
+    void invalidate().then(() => runQuery(lastQuery));
+  }
+
+  // Drop a closed row in place instead of re-querying, keeping order/scroll/highlight;
+  // invalidate the cache so a later query omits it.
+  function remove(id: string): void {
+    items = items.filter((item) => item.id !== id);
+    void invalidate();
   }
 
   // A lone @-command enables its source and clears the input, then re-queries the
@@ -72,7 +80,13 @@
   }
 </script>
 
-<List bind:query {placeholder} onSearchChange={onInput} onRefresh={refresh}>
+<List
+  bind:query
+  {placeholder}
+  onSearchChange={onInput}
+  onRefresh={refresh}
+  onRemove={remove}
+>
   {#snippet header()}
     <SourceIcons {enabled} onToggle={toggle} />
   {/snippet}

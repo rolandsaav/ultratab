@@ -296,6 +296,35 @@
   color: var(--st-text-muted);
 }
 
+/* Inline row action, revealed on hover/highlight. Negative margin offsets the
+   padding so it doesn't grow the fixed row height. */
+.item-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0.25em;
+  margin: -0.25em;
+  border: none;
+  border-radius: 0.3em;
+  background: none;
+  color: var(--st-text-muted);
+  cursor: pointer;
+  opacity: 0;
+}
+
+.item:hover .item-action,
+.item[data-selected] .item-action {
+  opacity: 1;
+}
+
+.item-action:hover,
+.item-action:focus-visible {
+  color: var(--st-text);
+  background: var(--st-hover);
+  outline: none;
+}
+
 .title {
   color: var(--st-text);
   font-size: 0.875em;
