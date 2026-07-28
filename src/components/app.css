@@ -28,6 +28,9 @@
   align-items: flex-start;
   justify-content: center;
   padding-top: 12vh;
+  /* Base color for the palette. Not on :host — the host node's inline `all: initial`
+     (page isolation) overrides it there, leaving `currentColor` icons black. */
+  color: var(--st-text);
   font-family:
     'Inter',
     system-ui,
