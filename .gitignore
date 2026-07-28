@@ -1,2 +1,7 @@
 node_modules
 dist
+dist-chrome
+dist-firefox
+dist-chrome.zip
+dist-firefox.zip
+.DS_Store

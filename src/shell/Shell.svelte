@@ -5,7 +5,7 @@
   import RootList from './RootList.svelte';
   import Footer from '../components/Footer.svelte';
 
-  nav.setRoot({ view: RootList, title: 'SuperTab' });
+  nav.setRoot({ view: RootList, title: 'Ultra Tab' });
   const Current = $derived(nav.current?.view);
 </script>
 

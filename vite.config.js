@@ -7,7 +7,7 @@ export default defineConfig({
   build: {
     lib: {
       entry: 'src/content/content.ts',
-      name: 'SuperTabContent',
+      name: 'UltraTabContent',
       formats: ['iife'],
       fileName: () => 'content.js',
     },

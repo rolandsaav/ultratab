@@ -6,7 +6,7 @@ import '../modules/downloads/background';
 
 /** Fire-and-forget a visited-set update, logging any failure. */
 function track(label: string, task: Promise<unknown>): void {
-  task.catch((err) => console.error(`[SuperTab] ${label} failed:`, err));
+  task.catch((err) => console.error(`[UltraTab] ${label} failed:`, err));
 }
 
 /** Relay a palette command to the active tab; rejects on unreachable tabs (e.g. chrome://). */

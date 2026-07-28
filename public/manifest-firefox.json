@@ -1,11 +1,14 @@
 {
   "manifest_version": 3,
-  "name": "Super Tab",
+  "name": "Ultra Tab",
   "version": "1.0.0",
   "description": "Command palette for tabs.",
   "browser_specific_settings": {
     "gecko": {
-      "id": "supertab@example.com"
+      "id": "rolandsaavedra22@gmail.com",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
     }
   },
   "permissions": [
@@ -20,11 +23,11 @@
   "commands": {
     "toggle-palette": {
       "suggested_key": { "default": "F1" },
-      "description": "Toggle the SuperTab palette"
+      "description": "Toggle the Ultra Tab palette"
     }
   },
   "action": {
-    "default_title": "Toggle SuperTab"
+    "default_title": "Toggle Ultra Tab"
   },
   "background": {
     "scripts": ["background.js"]
