@@ -19,6 +19,7 @@
   --st-text: #ffffff;
   --st-text-muted: #a0a0a0;
   --st-error: #f38ba8;
+  --st-hover: rgba(255, 255, 255, 0.1);
 }
 
 .overlay {
@@ -147,7 +148,7 @@
 
 .back:hover,
 .back:focus-visible {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--st-hover);
   outline: none;
 }
 
@@ -187,7 +188,7 @@
 
 .source:focus-visible {
   outline: none;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--st-hover);
 }
 
 .source svg {
