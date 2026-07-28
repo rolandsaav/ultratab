@@ -21,6 +21,9 @@
   let reqSeq = 0;
 
   const placeholder = $derived(searchPlaceholder(enabled));
+  const resultCount = $derived(
+    `${items.length} ${items.length === 1 ? 'result' : 'results'}`,
+  );
 
   // Refresh the background cache on entry, then show the initial (empty-query) results.
   onMount(refresh);
@@ -83,6 +86,7 @@
 <List
   bind:query
   {placeholder}
+  footerInfo={resultCount}
   onSearchChange={onInput}
   onRefresh={refresh}
   onRemove={remove}

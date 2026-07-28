@@ -31,6 +31,7 @@
         <div class="error">{status.error}</div>
       {/if}
       <Footer
+        info={footer.info}
         primaryLabel={footer.primaryLabel}
         hasActions={footer.hasActions}
       />

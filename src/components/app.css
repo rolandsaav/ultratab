@@ -361,6 +361,12 @@
   flex-shrink: 0;
 }
 
+/* Left-aligned status; the auto margin pushes the hints to the right edge. */
+.footer-info {
+  margin-right: auto;
+  color: var(--st-text-muted);
+}
+
 .footer .hint {
   display: inline-flex;
   align-items: center;

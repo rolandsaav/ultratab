@@ -34,6 +34,8 @@
     onRefresh?: () => void;
     /** Drop the row with this id — for `remove` actions that don't warrant a full refresh. */
     onRemove?: (id: string) => void;
+    /** Left-aligned footer text for this view, e.g. a result count. */
+    footerInfo?: string;
     children: Snippet;
   }
   let {
@@ -44,6 +46,7 @@
     onSearchChange,
     onRefresh,
     onRemove,
+    footerInfo,
     children,
   }: Props = $props();
 
@@ -65,11 +68,13 @@
     actionsOpen ? registry.get(actionTargetId) : undefined,
   );
 
-  // Keep the shell footer showing the highlighted row's primary action.
+  // Sync the shell footer for this view. Every view uses List, so mounting one
+  // overwrites the previous view's values — no manual reset.
   $effect(() => {
     const actions = highlightedEntry?.actions;
     footer.primaryLabel = actions?.primary.title;
     footer.hasActions = !!actions && hasSecondaryActions(actions);
+    footer.info = footerInfo;
   });
 
   // Own Escape only while the panel is open, so it closes before the shell steps back a view.
