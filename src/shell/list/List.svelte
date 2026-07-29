@@ -141,9 +141,9 @@
       if (entry) runRow(entry.actions.primary, id);
     },
     openActions,
-    runInline: (id) => {
-      const inline = registry.get(id)?.actions.inline;
-      if (inline) runRow(inline, id);
+    runInline: (id, index) => {
+      const command = registry.get(id)?.actions.inline?.[index]?.command;
+      if (command) runRow(command, id);
     },
   });
 

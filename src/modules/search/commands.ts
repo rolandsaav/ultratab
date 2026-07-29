@@ -9,7 +9,7 @@ import PinOff from '@lucide/svelte/icons/pin-off';
 import Volume2 from '@lucide/svelte/icons/volume-2';
 import VolumeX from '@lucide/svelte/icons/volume-x';
 import SearchIcon from '@lucide/svelte/icons/search';
-import type { RowActions } from '../../shell/list/context';
+import type { RowActions, InlineAction } from '../../shell/list/context';
 import type { Command } from '../../commands/command';
 import type { Item } from './parsers';
 import { action, openView } from '../../commands/factories';
@@ -47,7 +47,7 @@ const closeTab = action<Item>({
   id: 'close',
   title: 'Close Tab',
   icon: X,
-  shortcut: { mod: true, key: 'Backspace' },
+  shortcut: { mod: true, key: 'd' },
   do: (tab) => searchApi.closeTab(tab.id),
   after: 'remove',
 });
@@ -129,12 +129,61 @@ function pinToggle(item: Item): Command<Item> {
   return pinTab;
 }
 
+/**
+ * Row buttons for a tab. Each control is a state icon and its toggle in one fixed
+ * slot — no separate passive indicator to clash with a button. Persistent controls
+ * (an active state) stay visible at rest; the rest reveal on hover. A control's
+ * resting icon reflects state; where the toggle flips to a distinct outcome (mute),
+ * a hover icon previews the action.
+ */
+function inlineActions(item: Item): InlineAction<Item>[] {
+  const actions: InlineAction<Item>[] = [];
+
+  // Mute mirrors pin: available on hover for every tab, persistent (shown at rest)
+  // only when there's state to show. The rest icon reflects state; hovering swaps
+  // to the action's icon so you see what a click will do.
+  if (item.muted) {
+    // Muted at rest (VolumeX); hover previews unmute (Volume2).
+    actions.push({
+      command: unmuteTab,
+      icon: VolumeX,
+      hoverIcon: Volume2,
+      persistent: true,
+    });
+  } else if (item.audible) {
+    // Playing at rest (Volume2); hover previews mute (VolumeX).
+    actions.push({
+      command: muteTab,
+      icon: Volume2,
+      hoverIcon: VolumeX,
+      persistent: true,
+    });
+  } else {
+    // Silent: no state to show, so hover-only — and the icon is already the mute
+    // action (VolumeX), so no separate hover icon is needed.
+    actions.push({ command: muteTab, icon: VolumeX });
+  }
+
+  // Pin: same Pin glyph whether pinned (visible, click to unpin) or not (revealed
+  // on hover to pin) — the persistent flag and colour carry the state.
+  actions.push(
+    item.pinned
+      ? { command: unpinTab, icon: Pin, persistent: true }
+      : { command: pinTab, icon: Pin },
+  );
+
+  // Close: no state to show, so hover-only.
+  actions.push({ command: closeTab });
+
+  return actions;
+}
+
 /** A result's actions — the primary runs on Enter, the secondaries fill the panel. */
 export function commandsForItem(item: Item): RowActions<Item> {
   if (item.kind === 'tab') {
     return {
       primary: activateTab,
-      inline: closeTab,
+      inline: inlineActions(item),
       secondary: [
         closeTab,
         copyUrl,
