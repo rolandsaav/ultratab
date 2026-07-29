@@ -16,10 +16,10 @@ export interface Source {
   fetch: () => Promise<Item[]>;
 }
 
-/** All tabs in the current window except the active one (the page behind the palette). */
+/** All tabs in the current window, including the active one (marked so the UI can flag it). */
 async function fetchTabs(): Promise<Item[]> {
   const [tabs, visited] = await Promise.all([
-    browser.tabs.query({ currentWindow: true, active: false }),
+    browser.tabs.query({ currentWindow: true }),
     getVisited(),
   ]);
   return tabs.map((tab, i) => {

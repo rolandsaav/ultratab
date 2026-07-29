@@ -95,7 +95,12 @@
     <SourceIcons {enabled} onToggle={toggle} />
   {/snippet}
   {#each items as item (item.id)}
-    <ListItem id={item.id} subject={item} actions={commandsForItem(item)}>
+    <ListItem
+      id={item.id}
+      subject={item}
+      actions={commandsForItem(item)}
+      rowClass={item.active ? 'current' : undefined}
+    >
       <ItemRow {item} />
     </ListItem>
   {/each}

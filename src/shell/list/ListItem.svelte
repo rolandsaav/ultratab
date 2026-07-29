@@ -8,9 +8,11 @@
     actions: RowActions<T>;
     /** Value passed to an action's perform; omit for void/root commands. */
     subject?: T;
+    /** Extra class on the row element — a module's per-row modifier (e.g. `current`). */
+    rowClass?: string;
     children: Snippet;
   }
-  let { id, actions, subject, children }: Props = $props();
+  let { id, actions, subject, rowClass, children }: Props = $props();
   const ctx = getListContext();
 
   $effect(() => {
@@ -26,7 +28,7 @@
     e.preventDefault();
     ctx.openActions(id);
   }}
-  class="item"
+  class={rowClass ? `item ${rowClass}` : 'item'}
 >
   {@render children()}
   {#if actions.inline}

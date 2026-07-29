@@ -20,6 +20,8 @@
   --st-text-muted: #a0a0a0;
   --st-error: #f38ba8;
   --st-hover: rgba(255, 255, 255, 0.1);
+  /* Sole accent, reserved for the single active tab's row tint. */
+  --st-accent: #89b4fa;
 }
 
 .overlay {
@@ -266,6 +268,20 @@
 .item[data-selected] {
   background: var(--st-border);
   outline: none;
+}
+
+/* The single active tab (the page behind the palette): a faint accent wash, always
+   on, so it's spottable at rest without a label. */
+.item.current {
+  background: color-mix(in srgb, var(--st-accent) 14%, transparent);
+}
+
+/* When the active row is also hovered/selected, blend the accent into the brighter
+   highlight so the cue survives the selection instead of being masked by it. */
+.item.current:hover,
+.item.current:focus-visible,
+.item.current[data-selected] {
+  background: color-mix(in srgb, var(--st-accent) 22%, var(--st-border));
 }
 
 .favicon {
