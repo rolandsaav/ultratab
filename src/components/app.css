@@ -20,6 +20,9 @@
   --st-text-muted: #a0a0a0;
   --st-error: #f38ba8;
   --st-hover: rgba(255, 255, 255, 0.1);
+  /* Popup corner radius. Also the footer's horizontal padding, so its contents
+     clear the rounded corners instead of overlapping the curve. */
+  --st-radius: 1em;
   /* Sole accent, reserved for the single active tab's row tint. */
   --st-accent: #89b4fa;
   /* List scrollbar width. Also the gutter the header reserves so the source
@@ -65,7 +68,7 @@
   max-height: calc(100vh - 24vh);
   background: var(--st-bg);
   border: var(--st-border-w) solid var(--st-border);
-  border-radius: 1em;
+  border-radius: var(--st-radius);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -416,11 +419,17 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 0.6em;
-  padding: 0.5em 0.75em;
+  gap: 0.45em;
+  /* Horizontal padding equals the corner radius so contents never sit over the
+     rounded corners. The size-down is on the children (below), not here, so this
+     box measures em at the full palette scale — making the padding a true radius. */
+  padding: 0.375em var(--st-radius);
   border-top: var(--st-border-w) solid var(--st-border);
-  font-size: 0.75em;
   flex-shrink: 0;
+}
+
+.footer > * {
+  font-size: 0.75em;
 }
 
 /* Left-aligned status; the auto margin pushes the hints to the right edge. */
