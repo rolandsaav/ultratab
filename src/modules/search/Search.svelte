@@ -5,6 +5,7 @@
   import SourceIcons from './SourceIcons.svelte';
   import ItemRow from './ItemRow.svelte';
   import { searchApi } from './api';
+  import { rank } from './ranking';
   import { commandsForItem } from './commands';
   import { searchPlaceholder, parseSourceCommand } from './sources';
   import { status, toMessage } from '../../shell/status.svelte';
@@ -60,6 +61,15 @@
     void invalidate();
   }
 
+  // A pin/mute toggle mutated the acted item's state optimistically; reorder the
+  // current results in place with the same ranking a query would use (so a newly
+  // pinned tab lands where it belongs) instead of refetching — keeping scroll and
+  // highlight. Invalidate the cache so a later query reflects the change.
+  function update(): void {
+    items = rank([...items], lastQuery);
+    void invalidate();
+  }
+
   // A lone @-command enables its source and clears the input, then re-queries the
   // now-empty input (not the stale @-text) so recent results show.
   function onInput(value: string): void {
@@ -90,6 +100,7 @@
   onSearchChange={onInput}
   onRefresh={refresh}
   onRemove={remove}
+  onUpdate={update}
 >
   {#snippet header()}
     <SourceIcons {enabled} onToggle={toggle} />

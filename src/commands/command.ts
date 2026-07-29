@@ -25,9 +25,11 @@ export interface Command<T = void> {
   run: CommandRun<T>;
 }
 
-/** What happens to the palette after a perform: dismiss (`close`), refresh in place
- * (`stay`), or drop the acted row and reselect its neighbour (`remove`). */
-export type PerformAfter = 'close' | 'stay' | 'remove';
+/** What happens to the palette after a perform: dismiss (`close`), refetch in place
+ * (`stay`), drop the acted row and reselect its neighbour (`remove`), or reorder the
+ * existing rows in place without refetching (`update`) — for a toggle that changed
+ * the acted subject's own state (e.g. pin/mute) and mutated it optimistically. */
+export type PerformAfter = 'close' | 'stay' | 'remove' | 'update';
 
 export type CommandRun<T> =
   | { kind: 'view'; view: View }

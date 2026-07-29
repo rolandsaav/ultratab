@@ -82,36 +82,50 @@ const openInThisTab = action<Item>({
   do: (entry) => searchApi.openUrlInCurrentTab(entry.url),
 });
 
+// Change the tab's state, then reflect it on the acted item so the row updates
+// without a refetch. Paired with `after: 'update'`, which reorders in place —
+// keeping scroll and selection put. The write is after the await, so a failed API
+// call surfaces its error and leaves the item untouched.
+async function setMuted(tab: Item, muted: boolean): Promise<void> {
+  await searchApi.muteTab(tab.id, muted);
+  tab.muted = muted;
+}
+
+async function setPinned(tab: Item, pinned: boolean): Promise<void> {
+  await searchApi.pinTab(tab.id, pinned);
+  tab.pinned = pinned;
+}
+
 const muteTab = action<Item>({
   id: 'mute',
   title: 'Mute Tab',
   icon: VolumeX,
-  do: (tab) => searchApi.muteTab(tab.id, true),
-  after: 'stay',
+  do: (tab) => setMuted(tab, true),
+  after: 'update',
 });
 
 const unmuteTab = action<Item>({
   id: 'unmute',
   title: 'Unmute Tab',
   icon: Volume2,
-  do: (tab) => searchApi.muteTab(tab.id, false),
-  after: 'stay',
+  do: (tab) => setMuted(tab, false),
+  after: 'update',
 });
 
 const pinTab = action<Item>({
   id: 'pin',
   title: 'Pin Tab',
   icon: Pin,
-  do: (tab) => searchApi.pinTab(tab.id, true),
-  after: 'stay',
+  do: (tab) => setPinned(tab, true),
+  after: 'update',
 });
 
 const unpinTab = action<Item>({
   id: 'unpin',
   title: 'Unpin Tab',
   icon: PinOff,
-  do: (tab) => searchApi.pinTab(tab.id, false),
-  after: 'stay',
+  do: (tab) => setPinned(tab, false),
+  after: 'update',
 });
 
 /** The mute/unmute and pin/unpin toggles depend on the tab's current state. */

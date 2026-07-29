@@ -34,6 +34,8 @@
     onRefresh?: () => void;
     /** Drop the row with this id — for `remove` actions that don't warrant a full refresh. */
     onRemove?: (id: string) => void;
+    /** Reorder the existing rows in place — for `update` actions (e.g. pin/mute). */
+    onUpdate?: () => void;
     /** Left-aligned footer text for this view, e.g. a result count. */
     footerInfo?: string;
     children: Snippet;
@@ -46,6 +48,7 @@
     onSearchChange,
     onRefresh,
     onRemove,
+    onUpdate,
     footerInfo,
     children,
   }: Props = $props();
@@ -123,6 +126,7 @@
     void runCommand(command, entry.subject, {
       onRefresh,
       onRemove: () => onRemove?.(id),
+      onUpdate,
     });
   }
 
