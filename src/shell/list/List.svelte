@@ -58,6 +58,8 @@
   let inputRef = $state<HTMLInputElement | null>(null);
   let commandRoot = $state<ReturnType<typeof Command.Root> | null>(null);
   let actionsOpen = $state(false);
+  // Not cleared on close, so the panel keeps its contents while it animates out
+  // (hence panelEntry below isn't gated on actionsOpen).
   let actionTargetId = $state('');
 
   // Refocus the main input when the actions panel is closed.
@@ -67,9 +69,7 @@
   );
 
   const highlightedEntry = $derived(registry.get(highlightedId));
-  const panelEntry = $derived(
-    actionsOpen ? registry.get(actionTargetId) : undefined,
-  );
+  const panelEntry = $derived(registry.get(actionTargetId));
 
   // Sync the shell footer for this view. Every view uses List, so mounting one
   // overwrites the previous view's values — no manual reset.
@@ -94,11 +94,28 @@
     const actions = registry.get(id)?.actions;
     if (!actions || !hasSecondaryActions(actions)) return;
     actionTargetId = id;
+    // Pin the highlight to the panel's row so it's clear which item the panel acts on.
+    highlightedId = id;
     actionsOpen = true;
   }
 
   function closeActions(): void {
     actionsOpen = false;
+  }
+
+  // The Popover dismisses on pointer-down, but the click would still run the row
+  // beneath. Snapshot open-ness on pointer-down (capture, before the Popover
+  // reacts) and swallow the resulting click; right-clicks fire no click, so they
+  // still retarget. Assumes bits-ui dismisses on pointer-down, not click.
+  let swallowNextClick = false;
+  function armClickSwallow(): void {
+    swallowNextClick = actionsOpen;
+  }
+  function swallowClickWhileDismissing(e: MouseEvent): void {
+    if (!swallowNextClick) return;
+    swallowNextClick = false;
+    e.preventDefault();
+    e.stopPropagation();
   }
 
   // Step the highlight off the row about to be removed, so selection and scroll
@@ -180,7 +197,10 @@
   shouldFilter={false}
   loop
   bind:value={highlightedId}
+  disablePointerSelection={actionsOpen}
   onkeydown={onKeydown}
+  onpointerdowncapture={armClickSwallow}
+  onclickcapture={swallowClickWhileDismissing}
   class="command"
 >
   {#if isLoading}
@@ -208,12 +228,21 @@
     {#if header}{@render header()}{/if}
   </div>
 
-  <Command.List class="list">
+  <Command.List class={actionsOpen ? 'list list--inert' : 'list'}>
     <Command.Empty class="empty">No results found</Command.Empty>
     {@render children()}
   </Command.List>
 </Command.Root>
 
-{#if actionsOpen && panelEntry}
-  <ActionsPanel actions={allActions(panelEntry.actions)} onRun={runFromPanel} />
+<!-- Rendered once a row is targeted; the Popover owns open/close. Keyed on the
+     target so a right-click retarget remounts and replays the entry animation. -->
+{#if actionTargetId && panelEntry}
+  {#key actionTargetId}
+    <ActionsPanel
+      open={actionsOpen}
+      actions={allActions(panelEntry.actions)}
+      onRun={runFromPanel}
+      onDismiss={closeActions}
+    />
+  {/key}
 {/if}
