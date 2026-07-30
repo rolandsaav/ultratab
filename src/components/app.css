@@ -229,16 +229,10 @@
   height: var(--st-control-icon);
 }
 
-/* A control with a hover icon previews its action: the rest icon (current state)
-   gives way to the hover icon (what a click will do) while the row is hovered. */
+/* A control's hover icon (a preview of what a click does) is hidden by default;
+   the active row's action layer swaps it in — see the active-row block below. */
 .control-icon--hover {
   display: none;
-}
-.item:hover .control-icon--rest {
-  display: none;
-}
-.item:hover .control-icon--hover {
-  display: block;
 }
 
 /* Header source toggles: white when the source is enabled. */
@@ -264,6 +258,12 @@
      right edge — and thus the action columns — stays put whether or not the list
      scrolls, keeping it aligned with the header's source toggles. */
   scrollbar-gutter: stable;
+}
+
+/* Freeze the results while the actions panel is open; the stable gutter above
+   means hiding the scrollbar shifts nothing. */
+.list.list--inert {
+  overflow-y: hidden;
 }
 
 /* Both scroll containers get a thin, theme-matched scrollbar with a transparent
@@ -324,7 +324,8 @@
   border-top: none;
 }
 
-.item:hover,
+/* Active-row highlight. Keyed off data-selected (not :hover) so hovering can't
+   move the panel's frozen selection — see List's disablePointerSelection. */
 .item:focus-visible,
 .item[data-selected] {
   background: var(--st-border);
@@ -337,9 +338,8 @@
   background: color-mix(in srgb, var(--st-accent) 14%, transparent);
 }
 
-/* When the active row is also hovered/selected, blend the accent into the brighter
-   highlight so the cue survives the selection instead of being masked by it. */
-.item.current:hover,
+/* Active tab + selected: blend the accent into the highlight so the cue survives.
+   Off data-selected (not :hover), like the base highlight above. */
 .item.current:focus-visible,
 .item.current[data-selected] {
   background: color-mix(in srgb, var(--st-accent) 22%, var(--st-border));
@@ -392,11 +392,20 @@
   color: var(--st-text);
 }
 
-/* Latent actions reveal on hover/highlight; their slots are always reserved
-   (opacity, not display) so nothing shifts as they fade in. */
-.item:hover .item-action,
-.item[data-selected] .item-action {
-  opacity: 1;
+/* The active row's action layer — revealed buttons and the click-preview icon
+   swap — under one gated selector: data-selected (the active row, frozen on hover
+   by disablePointerSelection) and :not(.list--inert) (dropped while the panel is
+   open). No :hover path in, so affordances added here inherit both gates. */
+.list:not(.list--inert) .item[data-selected] {
+  .item-action {
+    opacity: 1;
+  }
+  .control-icon--rest {
+    display: none;
+  }
+  .control-icon--hover {
+    display: block;
+  }
 }
 
 .item-action:hover,
@@ -404,6 +413,12 @@
   color: var(--st-text);
   background: var(--st-hover);
   outline: none;
+}
+
+/* Buttons are display-only while the panel is open — a right-click falls through
+   to the row so it can still retarget. */
+.list--inert .item-action {
+  pointer-events: none;
 }
 
 .title {
@@ -492,20 +507,65 @@
   border-radius: 0.3em;
 }
 
-/* Actions panel — a nested command list anchored bottom-right over the palette,
-   with its filter input below the list. */
-.actions {
+/* Anchors the panel bottom-right; the animation is keyed off the bits-ui Popover's
+   data-state (its presence layer holds the node through the close). */
+.actions-anchor {
+  --actions-collapsed-scale: 0.9;
+  --actions-duration: 0.1s;
   position: absolute;
   right: 0.75em;
   bottom: 0.75em;
   width: 18em;
   max-width: calc(100% - 1.5em);
+  transform-origin: bottom right;
+}
+
+/* Open fades in from 80% + scales up; close fades to 0 + scales down. */
+.actions-anchor[data-state='open'] {
+  animation: actions-in var(--actions-duration) ease-out;
+}
+
+.actions-anchor[data-state='closed'] {
+  animation: actions-out var(--actions-duration) ease-in;
+}
+
+@keyframes actions-in {
+  from {
+    opacity: 0.8;
+    transform: scale(var(--actions-collapsed-scale));
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes actions-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(var(--actions-collapsed-scale));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .actions-anchor[data-state] {
+    animation: none;
+  }
+}
+
+/* Actions panel — a nested command list, with its filter input below the list. */
+.actions {
+  width: 100%;
   display: flex;
   flex-direction: column;
   background: var(--st-bg);
   border: var(--st-border-w) solid var(--st-border);
   border-radius: 0.75em;
-  box-shadow: 0 0.5em 1.5em rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0.5em 1.5em rgba(0, 0, 0, 0.8);
   overflow: hidden;
 }
 
