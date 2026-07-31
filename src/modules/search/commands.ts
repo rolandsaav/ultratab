@@ -82,10 +82,8 @@ const openInThisTab = action<Item>({
   do: (entry) => searchApi.openUrlInCurrentTab(entry.url),
 });
 
-// Change the tab's state, then reflect it on the acted item so the row updates
-// without a refetch. Paired with `after: 'update'`, which reorders in place —
-// keeping scroll and selection put. The write is after the await, so a failed API
-// call surfaces its error and leaves the item untouched.
+/** Reflect the new state on the item after the API call, so a failure leaves it
+ * untouched. Paired with `after: 'update'`, which reorders the row without a refetch. */
 async function setMuted(tab: Item, muted: boolean): Promise<void> {
   await searchApi.muteTab(tab.id, muted);
   tab.muted = muted;
@@ -143,21 +141,13 @@ function pinToggle(item: Item): Command<Item> {
   return pinTab;
 }
 
-/**
- * Row buttons for a tab. Each control is a state icon and its toggle in one fixed
- * slot — no separate passive indicator to clash with a button. Persistent controls
- * (an active state) stay visible at rest; the rest reveal on hover. A control's
- * resting icon reflects state; where the toggle flips to a distinct outcome (mute),
- * a hover icon previews the action.
- */
+/** Row buttons for a tab: each is a toggle whose resting icon reflects state.
+ * Persistent controls stay visible at rest; others reveal on hover. */
 function inlineActions(item: Item): InlineAction<Item>[] {
   const actions: InlineAction<Item>[] = [];
 
-  // Mute mirrors pin: available on hover for every tab, persistent (shown at rest)
-  // only when there's state to show. The rest icon reflects state; hovering swaps
-  // to the action's icon so you see what a click will do.
+  // Mute: persistent when there's state to show (muted/playing), else hover-only.
   if (item.muted) {
-    // Muted at rest (VolumeX); hover previews unmute (Volume2).
     actions.push({
       command: unmuteTab,
       icon: VolumeX,
@@ -165,7 +155,6 @@ function inlineActions(item: Item): InlineAction<Item>[] {
       persistent: true,
     });
   } else if (item.audible) {
-    // Playing at rest (Volume2); hover previews mute (VolumeX).
     actions.push({
       command: muteTab,
       icon: Volume2,
@@ -173,20 +162,16 @@ function inlineActions(item: Item): InlineAction<Item>[] {
       persistent: true,
     });
   } else {
-    // Silent: no state to show, so hover-only — and the icon is already the mute
-    // action (VolumeX), so no separate hover icon is needed.
     actions.push({ command: muteTab, icon: VolumeX });
   }
 
-  // Pin: same Pin glyph whether pinned (visible, click to unpin) or not (revealed
-  // on hover to pin) — the persistent flag and colour carry the state.
+  // Pin: same glyph pinned or not — the persistent flag and colour carry the state.
   actions.push(
     item.pinned
       ? { command: unpinTab, icon: Pin, persistent: true }
       : { command: pinTab, icon: Pin },
   );
 
-  // Close: no state to show, so hover-only.
   actions.push({ command: closeTab });
 
   return actions;

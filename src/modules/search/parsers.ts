@@ -18,7 +18,7 @@ export interface Item {
   muted: boolean;
   audible: boolean;
   pinned: boolean;
-  /** Tab-only — the currently-focused tab (the page behind the palette). */
+  /** Tab-only — the currently-focused tab. */
   active: boolean;
 }
 

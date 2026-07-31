@@ -61,10 +61,7 @@
     void invalidate();
   }
 
-  // A pin/mute toggle mutated the acted item's state optimistically; reorder the
-  // current results in place with the same ranking a query would use (so a newly
-  // pinned tab lands where it belongs) instead of refetching — keeping scroll and
-  // highlight. Invalidate the cache so a later query reflects the change.
+  // Re-rank after an optimistic pin/mute so the row moves without a refetch.
   function update(): void {
     items = rank([...items], lastQuery);
     void invalidate();

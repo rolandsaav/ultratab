@@ -2,21 +2,13 @@ import { createContext } from 'svelte';
 import type { Component } from 'svelte';
 import type { Command } from '../../commands/command';
 
-/**
- * A row button. Shown on hover (and on the highlighted row); set `persistent` to
- * also show it at rest, for controls that double as a state indicator (a pinned
- * tab's unpin, a playing tab's mute). `icon` is the resting glyph reflecting current
- * state; `hoverIcon`, if set, is swapped in on hover to preview what a click does.
- */
+/** A row button — shown on hover and on the highlighted row. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- rows hold heterogeneous subjects
 export interface InlineAction<T = any> {
-  /** The action to run on click. */
   command: Command<T>;
-  /** Displayed icon; defaults to the command's icon. Shows current state at rest. */
+  /** Resting glyph; defaults to the command's icon. Reflects current state. */
   icon?: Component;
-  /** If set, the icon swapped in while the row is hovered — a preview of what a
-   * click will do (e.g. a muted row shows the muted icon at rest, the unmute icon
-   * on hover). */
+  /** Swapped in on hover to preview what a click does. */
   hoverIcon?: Component;
   /** Keep visible at rest, not just on hover — for state-indicator actions. */
   persistent?: boolean;
