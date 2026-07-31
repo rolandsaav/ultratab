@@ -9,14 +9,19 @@
   import { commandsForItem } from './commands';
   import { searchPlaceholder, parseSourceCommand } from './sources';
   import { status, toMessage } from '../../shell/status.svelte';
+  import { warm } from './warm.svelte';
   import type { Item, Kind, SourceToggles } from './parsers';
 
-  let items = $state<Item[]>([]);
-  let enabled = $state<SourceToggles>({
+  const DEFAULT_TOGGLES: SourceToggles = {
     tab: true,
     bookmark: false,
     history: false,
-  });
+  };
+
+  // Seeded (copied, so in-place edits never write through) from the warm snapshot so a
+  // reopen shows the last results right away, not an empty list that grows on first query.
+  let items = $state<Item[]>([...warm.items]);
+  let enabled = $state<SourceToggles>({ ...DEFAULT_TOGGLES });
   let query = $state('');
   let lastQuery = $state('');
   let reqSeq = 0;
@@ -26,6 +31,14 @@
     `${items.length} ${items.length === 1 ? 'result' : 'results'}`,
   );
 
+  // The default view — empty query, default sources — is all an open renders, so its
+  // results are the only ones worth keeping warm for the next open.
+  const isDefaultView = (text: string, toggles: SourceToggles): boolean =>
+    text === '' &&
+    (Object.keys(DEFAULT_TOGGLES) as Kind[]).every(
+      (kind) => toggles[kind] === DEFAULT_TOGGLES[kind],
+    );
+
   // Refresh the background cache on entry, then show the initial (empty-query) results.
   onMount(refresh);
 
@@ -34,9 +47,15 @@
     status.error = '';
     const id = ++reqSeq;
     try {
-      const clean = $state.snapshot(enabled) as SourceToggles;
-      const { reqId, items: results } = await searchApi.query(next, clean, id);
-      if (reqId === reqSeq) items = results;
+      const toggles = $state.snapshot(enabled) as SourceToggles;
+      const { reqId, items: results } = await searchApi.query(
+        next,
+        toggles,
+        id,
+      );
+      if (reqId !== reqSeq) return; // superseded by a newer query
+      items = results;
+      if (isDefaultView(next, toggles)) warm.items = results;
     } catch (e) {
       if (id === reqSeq) status.error = toMessage(e, 'Search failed');
     }
