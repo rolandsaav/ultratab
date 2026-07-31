@@ -7,6 +7,8 @@ export interface RunHandlers {
   onRefresh?: () => void;
   /** For a `remove` action: drop the acted row, no full re-fetch. */
   onRemove?: () => void;
+  /** For an `update` action: reorder the existing rows in place, no re-fetch. */
+  onUpdate?: () => void;
 }
 
 /** Run a command against its subject: push a view, or perform an effect then close,
@@ -31,6 +33,8 @@ export async function runCommand<T>(
     handlers.onRefresh?.();
   } else if (command.run.after === 'remove') {
     (handlers.onRemove ?? handlers.onRefresh)?.();
+  } else if (command.run.after === 'update') {
+    (handlers.onUpdate ?? handlers.onRefresh)?.();
   } else {
     nav.close();
   }

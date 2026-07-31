@@ -20,6 +20,19 @@
   --st-text-muted: #a0a0a0;
   --st-error: #f38ba8;
   --st-hover: rgba(255, 255, 255, 0.1);
+  /* Sole accent, reserved for the single active tab's row tint. */
+  --st-accent: #89b4fa;
+  /* List scrollbar width. Also the gutter the header reserves so the source
+     toggles stay column-aligned with the row actions whether or not it scrolls. */
+  --st-scrollbar: 0.75em;
+  /* Right-aligned control clusters (header source toggles + row inline actions)
+     share these, so their icons fall in the same columns. --st-edge-pad is the
+     matching left/right inset that anchors both clusters to the same edge. */
+  --st-control-size: 1.75em;
+  --st-control-gap: 0.25em;
+  --st-edge-pad: 1.25em;
+  /* Glyph size inside a control — one value for header toggles and row actions. */
+  --st-control-icon: 1em;
 }
 
 .overlay {
@@ -115,12 +128,22 @@
 }
 
 /* Search input paired with the source-toggle icons on its right, sharing one
-   bottom border so the two read as a single row. */
+   bottom border so the two read as a single row. It reserves the same scrollbar
+   gutter as the list (via the same mechanism, so the actual width need not be
+   guessed) and the same right inset, keeping the toggles column-aligned with the
+   row actions whether or not the list scrolls. */
 .input-row {
   display: flex;
   align-items: center;
   border-bottom: var(--st-border-w) solid var(--st-border);
   flex-shrink: 0;
+  padding-right: var(--st-edge-pad);
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+.input-row::-webkit-scrollbar {
+  width: var(--st-scrollbar);
 }
 
 .input-row .input {
@@ -162,26 +185,55 @@
   padding-left: 0.5em;
 }
 
-/* Source-toggle icons: muted by default, white when the source is enabled. */
-.sources {
-  display: flex;
+/* Right-aligned control cluster — shared by the header's source toggles and each
+   row's inline actions, so both occupy identical columns. The single source of
+   truth for their box size and spacing. */
+.controls {
+  display: inline-flex;
   align-items: center;
-  gap: 0.375em;
-  padding-right: 1.125em;
+  gap: var(--st-control-gap);
+  flex-shrink: 0;
 }
 
-.source {
+.control {
+  font: inherit;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.25em;
+  flex-shrink: 0;
+  width: var(--st-control-size);
+  height: var(--st-control-size);
+  padding: 0;
   border: none;
   background: none;
+  border-radius: 0.3em;
   color: var(--st-text-muted);
   cursor: pointer;
-  border-radius: 0.3em;
+  transition:
+    opacity 0.08s ease,
+    color 0.08s ease,
+    background 0.08s ease;
 }
 
+/* One glyph size across both clusters, so header toggles and row actions match. */
+.control svg {
+  width: var(--st-control-icon);
+  height: var(--st-control-icon);
+}
+
+/* A control with a hover icon previews its action: the rest icon (current state)
+   gives way to the hover icon (what a click will do) while the row is hovered. */
+.control-icon--hover {
+  display: none;
+}
+.item:hover .control-icon--rest {
+  display: none;
+}
+.item:hover .control-icon--hover {
+  display: block;
+}
+
+/* Header source toggles: white when the source is enabled. */
 .source.enabled {
   color: var(--st-text);
 }
@@ -189,11 +241,6 @@
 .source:focus-visible {
   outline: none;
   background: var(--st-hover);
-}
-
-.source svg {
-  width: 1.125em;
-  height: 1.125em;
 }
 
 /* Shows --st-rows rows when there's room, otherwise shrinks to fit the popup
@@ -205,12 +252,20 @@
   max-height: calc(var(--st-rows) * var(--st-row-height));
   min-height: 0;
   overflow-y: auto;
+  /* Reserve the scrollbar gutter even when not scrolling, so the row content's
+     right edge — and thus the action columns — stays put whether or not the list
+     scrolls, keeping it aligned with the header's source toggles. */
+  scrollbar-gutter: stable;
 }
 
 /* Both scroll containers get a thin, theme-matched scrollbar with a transparent
-   track, so the popup shows through instead of the OS default's darker band. */
+   track, so the popup shows through instead of the OS default's darker band.
+   `.input-row` is included not to scroll but so its reserved gutter is sized by
+   the identical rules as the list's — otherwise the two reserve different widths
+   and the header toggles drift out of column with the row actions. */
 .list,
-.actions-list {
+.actions-list,
+.input-row {
   scrollbar-width: thin; /* Firefox + Chromium 121+ */
   scrollbar-color: var(--st-border) transparent;
 }
@@ -218,7 +273,7 @@
 /* WebKit / older Chromium equivalent of the above. */
 .list::-webkit-scrollbar,
 .actions-list::-webkit-scrollbar {
-  width: 0.75em;
+  width: var(--st-scrollbar);
 }
 .list::-webkit-scrollbar-track,
 .actions-list::-webkit-scrollbar-track {
@@ -246,7 +301,7 @@
   gap: 0.75em;
   width: 100%;
   height: var(--st-row-height);
-  padding: 0 1.25em;
+  padding: 0 var(--st-edge-pad);
   border: none;
   border-top: var(--st-border-w) solid var(--st-border);
   background: none;
@@ -266,6 +321,20 @@
 .item[data-selected] {
   background: var(--st-border);
   outline: none;
+}
+
+/* The single active tab (the page behind the palette): a faint accent wash, always
+   on, so it's spottable at rest without a label. */
+.item.current {
+  background: color-mix(in srgb, var(--st-accent) 14%, transparent);
+}
+
+/* When the active row is also hovered/selected, blend the accent into the brighter
+   highlight so the cue survives the selection instead of being masked by it. */
+.item.current:hover,
+.item.current:focus-visible,
+.item.current[data-selected] {
+  background: color-mix(in srgb, var(--st-accent) 22%, var(--st-border));
 }
 
 .favicon {
@@ -290,29 +359,22 @@
   background: var(--st-text-muted);
 }
 
-/* Trailing tab-state icons (pinned, muted, playing audio). */
-.indicator {
-  flex-shrink: 0;
-  color: var(--st-text-muted);
-}
-
-/* Inline row action, revealed on hover/highlight. Negative margin offsets the
-   padding so it doesn't grow the fixed row height. */
+/* Row inline actions (`.control` handles box/size/spacing) start hidden; their
+   slots stay reserved via opacity, not display, so nothing shifts as they fade in
+   on hover/highlight. */
 .item-action {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  padding: 0.25em;
-  margin: -0.25em;
-  border: none;
-  border-radius: 0.3em;
-  background: none;
-  color: var(--st-text-muted);
-  cursor: pointer;
   opacity: 0;
 }
 
+/* A control that doubles as a state indicator (pinned, muted, playing): visible
+   at rest and brighter, to read as an active state rather than a latent action. */
+.item-action.persistent {
+  opacity: 1;
+  color: var(--st-text);
+}
+
+/* Latent actions reveal on hover/highlight; their slots are always reserved
+   (opacity, not display) so nothing shifts as they fade in. */
 .item:hover .item-action,
 .item[data-selected] .item-action {
   opacity: 1;

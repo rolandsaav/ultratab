@@ -5,6 +5,7 @@
   import SourceIcons from './SourceIcons.svelte';
   import ItemRow from './ItemRow.svelte';
   import { searchApi } from './api';
+  import { rank } from './ranking';
   import { commandsForItem } from './commands';
   import { searchPlaceholder, parseSourceCommand } from './sources';
   import { status, toMessage } from '../../shell/status.svelte';
@@ -60,6 +61,12 @@
     void invalidate();
   }
 
+  // Re-rank after an optimistic pin/mute so the row moves without a refetch.
+  function update(): void {
+    items = rank([...items], lastQuery);
+    void invalidate();
+  }
+
   // A lone @-command enables its source and clears the input, then re-queries the
   // now-empty input (not the stale @-text) so recent results show.
   function onInput(value: string): void {
@@ -90,12 +97,18 @@
   onSearchChange={onInput}
   onRefresh={refresh}
   onRemove={remove}
+  onUpdate={update}
 >
   {#snippet header()}
     <SourceIcons {enabled} onToggle={toggle} />
   {/snippet}
   {#each items as item (item.id)}
-    <ListItem id={item.id} subject={item} actions={commandsForItem(item)}>
+    <ListItem
+      id={item.id}
+      subject={item}
+      actions={commandsForItem(item)}
+      rowClass={item.active ? 'current' : undefined}
+    >
       <ItemRow {item} />
     </ListItem>
   {/each}

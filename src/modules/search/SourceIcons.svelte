@@ -10,12 +10,12 @@
   let { enabled, onToggle }: Props = $props();
 </script>
 
-<div class="sources">
+<div class="controls">
   {#each SOURCE_ORDER as kind (kind)}
     {@const Icon = SOURCE_META[kind].icon}
     <button
       type="button"
-      class="source"
+      class="control source"
       class:enabled={enabled[kind]}
       aria-pressed={enabled[kind]}
       title={SOURCE_META[kind].label}

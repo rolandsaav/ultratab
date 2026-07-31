@@ -9,7 +9,7 @@ import PinOff from '@lucide/svelte/icons/pin-off';
 import Volume2 from '@lucide/svelte/icons/volume-2';
 import VolumeX from '@lucide/svelte/icons/volume-x';
 import SearchIcon from '@lucide/svelte/icons/search';
-import type { RowActions } from '../../shell/list/context';
+import type { RowActions, InlineAction } from '../../shell/list/context';
 import type { Command } from '../../commands/command';
 import type { Item } from './parsers';
 import { action, openView } from '../../commands/factories';
@@ -47,7 +47,7 @@ const closeTab = action<Item>({
   id: 'close',
   title: 'Close Tab',
   icon: X,
-  shortcut: { mod: true, key: 'Backspace' },
+  shortcut: { mod: true, key: 'd' },
   do: (tab) => searchApi.closeTab(tab.id),
   after: 'remove',
 });
@@ -82,36 +82,48 @@ const openInThisTab = action<Item>({
   do: (entry) => searchApi.openUrlInCurrentTab(entry.url),
 });
 
+/** Reflect the new state on the item after the API call, so a failure leaves it
+ * untouched. Paired with `after: 'update'`, which reorders the row without a refetch. */
+async function setMuted(tab: Item, muted: boolean): Promise<void> {
+  await searchApi.muteTab(tab.id, muted);
+  tab.muted = muted;
+}
+
+async function setPinned(tab: Item, pinned: boolean): Promise<void> {
+  await searchApi.pinTab(tab.id, pinned);
+  tab.pinned = pinned;
+}
+
 const muteTab = action<Item>({
   id: 'mute',
   title: 'Mute Tab',
   icon: VolumeX,
-  do: (tab) => searchApi.muteTab(tab.id, true),
-  after: 'stay',
+  do: (tab) => setMuted(tab, true),
+  after: 'update',
 });
 
 const unmuteTab = action<Item>({
   id: 'unmute',
   title: 'Unmute Tab',
   icon: Volume2,
-  do: (tab) => searchApi.muteTab(tab.id, false),
-  after: 'stay',
+  do: (tab) => setMuted(tab, false),
+  after: 'update',
 });
 
 const pinTab = action<Item>({
   id: 'pin',
   title: 'Pin Tab',
   icon: Pin,
-  do: (tab) => searchApi.pinTab(tab.id, true),
-  after: 'stay',
+  do: (tab) => setPinned(tab, true),
+  after: 'update',
 });
 
 const unpinTab = action<Item>({
   id: 'unpin',
   title: 'Unpin Tab',
   icon: PinOff,
-  do: (tab) => searchApi.pinTab(tab.id, false),
-  after: 'stay',
+  do: (tab) => setPinned(tab, false),
+  after: 'update',
 });
 
 /** The mute/unmute and pin/unpin toggles depend on the tab's current state. */
@@ -129,12 +141,60 @@ function pinToggle(item: Item): Command<Item> {
   return pinTab;
 }
 
+type AudioState = 'muted' | 'playing' | 'silent';
+
+function audioState(item: Item): AudioState {
+  if (item.muted) return 'muted';
+  if (item.audible) return 'playing';
+  return 'silent';
+}
+
+/** The mute control: resting icon reflects the tab's audio state, a hover icon previews
+ * the flip, and it stays visible at rest while there's state to show. */
+function muteAction(item: Item): InlineAction<Item> {
+  switch (audioState(item)) {
+    case 'muted':
+      return {
+        command: unmuteTab,
+        icon: VolumeX,
+        hoverIcon: Volume2,
+        persistent: true,
+      };
+    case 'playing':
+      return {
+        command: muteTab,
+        icon: Volume2,
+        hoverIcon: VolumeX,
+        persistent: true,
+      };
+    case 'silent':
+      return { command: muteTab, icon: VolumeX };
+  }
+}
+
+/** Row buttons for a tab: each is a toggle whose resting icon reflects state.
+ * Persistent controls stay visible at rest; others reveal on hover. */
+function inlineActions(item: Item): InlineAction<Item>[] {
+  const actions: InlineAction<Item>[] = [muteAction(item)];
+
+  // Pin: same glyph pinned or not — the persistent flag and colour carry the state.
+  if (item.pinned) {
+    actions.push({ command: unpinTab, icon: Pin, persistent: true });
+  } else {
+    actions.push({ command: pinTab, icon: Pin });
+  }
+
+  actions.push({ command: closeTab });
+
+  return actions;
+}
+
 /** A result's actions — the primary runs on Enter, the secondaries fill the panel. */
 export function commandsForItem(item: Item): RowActions<Item> {
   if (item.kind === 'tab') {
     return {
       primary: activateTab,
-      inline: closeTab,
+      inline: inlineActions(item),
       secondary: [
         closeTab,
         copyUrl,

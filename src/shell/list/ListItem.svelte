@@ -8,9 +8,11 @@
     actions: RowActions<T>;
     /** Value passed to an action's perform; omit for void/root commands. */
     subject?: T;
+    /** Extra class on the row element — a module's per-row modifier (e.g. `current`). */
+    rowClass?: string;
     children: Snippet;
   }
-  let { id, actions, subject, children }: Props = $props();
+  let { id, actions, subject, rowClass, children }: Props = $props();
   const ctx = getListContext();
 
   $effect(() => {
@@ -26,22 +28,33 @@
     e.preventDefault();
     ctx.openActions(id);
   }}
-  class="item"
+  class={rowClass ? `item ${rowClass}` : 'item'}
 >
   {@render children()}
   {#if actions.inline}
-    {@const Icon = actions.inline.icon}
-    <button
-      type="button"
-      class="item-action"
-      title={actions.inline.title}
-      aria-label={actions.inline.title}
-      onclick={(e) => {
-        e.stopPropagation();
-        ctx.runInline(id);
-      }}
-    >
-      <Icon size={16} />
-    </button>
+    <div class="controls">
+      {#each actions.inline as action, i (action.command.id)}
+        {@const Icon = action.icon ?? action.command.icon}
+        <button
+          type="button"
+          class="control item-action"
+          class:persistent={action.persistent}
+          title={action.command.title}
+          aria-label={action.command.title}
+          onclick={(e) => {
+            e.stopPropagation();
+            ctx.runInline(id, i);
+          }}
+        >
+          {#if action.hoverIcon}
+            {@const HoverIcon = action.hoverIcon}
+            <Icon class="control-icon control-icon--rest" />
+            <HoverIcon class="control-icon control-icon--hover" />
+          {:else}
+            <Icon />
+          {/if}
+        </button>
+      {/each}
+    </div>
   {/if}
 </Command.Item>
