@@ -141,36 +141,48 @@ function pinToggle(item: Item): Command<Item> {
   return pinTab;
 }
 
+type AudioState = 'muted' | 'playing' | 'silent';
+
+function audioState(item: Item): AudioState {
+  if (item.muted) return 'muted';
+  if (item.audible) return 'playing';
+  return 'silent';
+}
+
+/** The mute control: resting icon reflects the tab's audio state, a hover icon previews
+ * the flip, and it stays visible at rest while there's state to show. */
+function muteAction(item: Item): InlineAction<Item> {
+  switch (audioState(item)) {
+    case 'muted':
+      return {
+        command: unmuteTab,
+        icon: VolumeX,
+        hoverIcon: Volume2,
+        persistent: true,
+      };
+    case 'playing':
+      return {
+        command: muteTab,
+        icon: Volume2,
+        hoverIcon: VolumeX,
+        persistent: true,
+      };
+    case 'silent':
+      return { command: muteTab, icon: VolumeX };
+  }
+}
+
 /** Row buttons for a tab: each is a toggle whose resting icon reflects state.
  * Persistent controls stay visible at rest; others reveal on hover. */
 function inlineActions(item: Item): InlineAction<Item>[] {
-  const actions: InlineAction<Item>[] = [];
-
-  // Mute: persistent when there's state to show (muted/playing), else hover-only.
-  if (item.muted) {
-    actions.push({
-      command: unmuteTab,
-      icon: VolumeX,
-      hoverIcon: Volume2,
-      persistent: true,
-    });
-  } else if (item.audible) {
-    actions.push({
-      command: muteTab,
-      icon: Volume2,
-      hoverIcon: VolumeX,
-      persistent: true,
-    });
-  } else {
-    actions.push({ command: muteTab, icon: VolumeX });
-  }
+  const actions: InlineAction<Item>[] = [muteAction(item)];
 
   // Pin: same glyph pinned or not — the persistent flag and colour carry the state.
-  actions.push(
-    item.pinned
-      ? { command: unpinTab, icon: Pin, persistent: true }
-      : { command: pinTab, icon: Pin },
-  );
+  if (item.pinned) {
+    actions.push({ command: unpinTab, icon: Pin, persistent: true });
+  } else {
+    actions.push({ command: pinTab, icon: Pin });
+  }
 
   actions.push({ command: closeTab });
 
