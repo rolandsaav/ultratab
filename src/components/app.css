@@ -33,7 +33,7 @@
      the left/right inset that anchors them to the same edge. */
   --st-control-size: 1.75em;
   --st-control-gap: 0.25em;
-  --st-edge-pad: 1.25em;
+  --st-edge-pad: 0.75em;
   /* Glyph size inside a control — one value for header toggles and row actions. */
   --st-control-icon: 1em;
 }
