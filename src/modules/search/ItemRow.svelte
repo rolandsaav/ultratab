@@ -4,14 +4,16 @@
 </script>
 
 {#if item.favIconUrl}
-  <img
-    class="favicon"
-    src={item.favIconUrl}
-    alt=""
-    onerror={(e) => {
-      (e.currentTarget as HTMLImageElement).style.display = 'none';
-    }}
-  />
+  <span class="lead">
+    <img
+      class="favicon"
+      src={item.favIconUrl}
+      alt=""
+      onerror={(e) => {
+        (e.currentTarget as HTMLImageElement).style.display = 'none';
+      }}
+    />
+  </span>
 {/if}
 <div class="text">
   <div class="title">{item.title}</div>

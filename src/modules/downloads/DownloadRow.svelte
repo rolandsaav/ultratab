@@ -4,7 +4,9 @@
   let { item }: { item: DownloadEntry } = $props();
 </script>
 
-<File class="favicon" />
+<span class="lead">
+  <File class="favicon" />
+</span>
 <div class="text">
   <div class="title">{item.filename}</div>
   <div class="url">{item.path}</div>

@@ -20,14 +20,17 @@
   --st-text-muted: #a0a0a0;
   --st-error: #f38ba8;
   --st-hover: rgba(255, 255, 255, 0.1);
+  /* Popup corner radius. Also the footer's horizontal padding, so its contents
+     clear the rounded corners instead of overlapping the curve. */
+  --st-radius: 1em;
   /* Sole accent, reserved for the single active tab's row tint. */
   --st-accent: #89b4fa;
   /* List scrollbar width. Also the gutter the header reserves so the source
      toggles stay column-aligned with the row actions whether or not it scrolls. */
   --st-scrollbar: 0.75em;
-  /* Right-aligned control clusters (header source toggles + row inline actions)
-     share these, so their icons fall in the same columns. --st-edge-pad is the
-     matching left/right inset that anchors both clusters to the same edge. */
+  /* Size of every icon square — header/row controls, the back button, and each
+     row's leading favicon — so all the icon columns line up. --st-edge-pad is
+     the left/right inset that anchors them to the same edge. */
   --st-control-size: 1.75em;
   --st-control-gap: 0.25em;
   --st-edge-pad: 1.25em;
@@ -65,7 +68,7 @@
   max-height: calc(100vh - 24vh);
   background: var(--st-bg);
   border: var(--st-border-w) solid var(--st-border);
-  border-radius: 1em;
+  border-radius: var(--st-radius);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -153,15 +156,20 @@
   border-bottom: none;
 }
 
-/* Back arrow left of the input, shown when a view is pushed onto the stack.
-   A padded, bordered box, Raycast-style. */
+/* Back arrow, shown left of the input when a view is pushed onto the stack. A
+   bordered, Raycast-style icon square sharing --st-control-size and the
+   --st-edge-pad inset with .lead, so it centers on the favicon column below. */
 .back {
+  /* Reset the UA button font so the em-based size and margin resolve against
+     :host (16px), not the browser's smaller default button font. */
+  font: inherit;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  margin-left: 0.875em;
-  padding: 0.4em;
+  width: var(--st-control-size);
+  height: var(--st-control-size);
+  margin-left: var(--st-edge-pad);
   border: var(--st-border-w) solid var(--st-border);
   border-radius: 0.5em;
   background: rgba(255, 255, 255, 0.04);
@@ -337,6 +345,17 @@
   background: color-mix(in srgb, var(--st-accent) 22%, var(--st-border));
 }
 
+/* Leading icon square, mirroring the back button (see .back) so a row's favicon
+   centers in the same column as the back arrow above it. */
+.lead {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--st-control-size);
+  height: var(--st-control-size);
+}
+
 .favicon {
   width: 1em;
   height: 1em;
@@ -416,11 +435,17 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 0.6em;
-  padding: 0.5em 0.75em;
+  gap: 0.45em;
+  /* Horizontal padding equals the corner radius so contents never sit over the
+     rounded corners. The size-down is on the children (below), not here, so this
+     box measures em at the full palette scale — making the padding a true radius. */
+  padding: 0.375em var(--st-radius);
   border-top: var(--st-border-w) solid var(--st-border);
-  font-size: 0.75em;
   flex-shrink: 0;
+}
+
+.footer > * {
+  font-size: 0.75em;
 }
 
 /* Left-aligned status; the auto margin pushes the hints to the right edge. */
