@@ -58,8 +58,7 @@
   let inputRef = $state<HTMLInputElement | null>(null);
   let commandRoot = $state<ReturnType<typeof Command.Root> | null>(null);
   let actionsOpen = $state(false);
-  // Not cleared on close, so the panel keeps its contents while it animates out
-  // (hence panelEntry below isn't gated on actionsOpen).
+  // Kept after close so the panel retains its contents while it animates out.
   let actionTargetId = $state('');
 
   // Refocus the main input when the actions panel is closed.
@@ -94,7 +93,7 @@
     const actions = registry.get(id)?.actions;
     if (!actions || !hasSecondaryActions(actions)) return;
     actionTargetId = id;
-    // Pin the highlight to the panel's row so it's clear which item the panel acts on.
+    // Pin the highlight to the panel's row.
     highlightedId = id;
     actionsOpen = true;
   }
@@ -104,9 +103,7 @@
   }
 
   // The Popover dismisses on pointer-down, but the click would still run the row
-  // beneath. Snapshot open-ness on pointer-down (capture, before the Popover
-  // reacts) and swallow the resulting click; right-clicks fire no click, so they
-  // still retarget. Assumes bits-ui dismisses on pointer-down, not click.
+  // beneath — swallow it. Right-clicks fire no click, so they still retarget.
   let swallowNextClick = false;
   function armClickSwallow(): void {
     swallowNextClick = actionsOpen;
@@ -234,8 +231,7 @@
   </Command.List>
 </Command.Root>
 
-<!-- Rendered once a row is targeted; the Popover owns open/close. Keyed on the
-     target so a right-click retarget remounts and replays the entry animation. -->
+<!-- Keyed on the target so a right-click retarget remounts and replays the animation. -->
 {#if actionTargetId && panelEntry}
   {#key actionTargetId}
     <ActionsPanel

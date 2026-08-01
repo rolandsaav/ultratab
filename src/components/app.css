@@ -229,8 +229,7 @@
   height: var(--st-control-icon);
 }
 
-/* A control's hover icon (a preview of what a click does) is hidden by default;
-   the active row's action layer swaps it in — see the active-row block below. */
+/* Hidden by default; the active row's action layer swaps it in. */
 .control-icon--hover {
   display: none;
 }
@@ -260,8 +259,7 @@
   scrollbar-gutter: stable;
 }
 
-/* Freeze the results while the actions panel is open; the stable gutter above
-   means hiding the scrollbar shifts nothing. */
+/* Freeze the results while the actions panel is open. */
 .list.list--inert {
   overflow-y: hidden;
 }
@@ -324,8 +322,7 @@
   border-top: none;
 }
 
-/* Active-row highlight. Keyed off data-selected (not :hover) so hovering can't
-   move the panel's frozen selection — see List's disablePointerSelection. */
+/* Active-row highlight, keyed off data-selected (not :hover) so hover can't move it. */
 .item:focus-visible,
 .item[data-selected] {
   background: var(--st-border);
@@ -338,8 +335,7 @@
   background: color-mix(in srgb, var(--st-accent) 14%, transparent);
 }
 
-/* Active tab + selected: blend the accent into the highlight so the cue survives.
-   Off data-selected (not :hover), like the base highlight above. */
+/* Active tab + selected: blend the accent into the highlight so the cue survives. */
 .item.current:focus-visible,
 .item.current[data-selected] {
   background: color-mix(in srgb, var(--st-accent) 22%, var(--st-border));
@@ -392,10 +388,8 @@
   color: var(--st-text);
 }
 
-/* The active row's action layer — revealed buttons and the click-preview icon
-   swap — under one gated selector: data-selected (the active row, frozen on hover
-   by disablePointerSelection) and :not(.list--inert) (dropped while the panel is
-   open). No :hover path in, so affordances added here inherit both gates. */
+/* The active row's revealed buttons and icon swap, gated on data-selected and
+   :not(.list--inert) — no :hover path, so both gates always apply. */
 .list:not(.list--inert) .item[data-selected] {
   .item-action {
     opacity: 1;
@@ -415,8 +409,7 @@
   outline: none;
 }
 
-/* Buttons are display-only while the panel is open — a right-click falls through
-   to the row so it can still retarget. */
+/* Display-only while the panel is open, so a right-click falls through to retarget. */
 .list--inert .item-action {
   pointer-events: none;
 }
@@ -507,8 +500,7 @@
   border-radius: 0.3em;
 }
 
-/* Anchors the panel bottom-right; the animation is keyed off the bits-ui Popover's
-   data-state (its presence layer holds the node through the close). */
+/* Anchors the panel bottom-right; animation keyed off the Popover's data-state. */
 .actions-anchor {
   --actions-collapsed-scale: 0.9;
   --actions-duration: 0.1s;
@@ -520,7 +512,6 @@
   transform-origin: bottom right;
 }
 
-/* Open fades in from 80% + scales up; close fades to 0 + scales down. */
 .actions-anchor[data-state='open'] {
   animation: actions-in var(--actions-duration) ease-out;
 }

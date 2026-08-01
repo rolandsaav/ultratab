@@ -7,9 +7,7 @@
   interface Props {
     actions: PaletteCommand<T>[];
     onRun: (command: PaletteCommand<T>) => void;
-    /** Controlled open state — the shell owns it. */
     open: boolean;
-    /** Called when bits-ui requests a close (a click outside the panel). */
     onDismiss: () => void;
   }
 
@@ -19,13 +17,11 @@
   let inputRef = $state<HTMLInputElement | null>(null);
   let commandRoot = $state<ReturnType<typeof Command.Root> | null>(null);
 
-  // Focus the filter while open.
   autofocus(
     () => inputRef,
     () => open,
   );
-  // Clear the filter on close: query is bound to the Command's input, so a stale
-  // value would keep filtering the actions the next time the panel opens.
+  // Clear the filter on close so a stale value doesn't filter the actions on reopen.
   $effect(() => {
     if (!open) query = '';
   });
@@ -42,8 +38,7 @@
 </script>
 
 <Popover.Root {open} onOpenChange={(v) => !v && onDismiss()}>
-  <!-- Focus is List's job (filter on open, main input on close), so trapFocus and
-       close-autofocus are off here. -->
+  <!-- Focus is List's job, so trapFocus and close-autofocus are off here. -->
   <Popover.ContentStatic
     class="actions-anchor"
     trapFocus={false}
