@@ -253,6 +253,7 @@
   max-height: calc(var(--st-rows) * var(--st-row-height));
   min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
   /* Reserve the scrollbar gutter even when not scrolling, so the row content's
      right edge — and thus the action columns — stays put whether or not the list
      scrolls, keeping it aligned with the header's source toggles. */
@@ -566,6 +567,7 @@
   padding: 0.375em;
   max-height: 15em;
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .action-item {
