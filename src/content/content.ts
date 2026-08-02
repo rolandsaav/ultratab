@@ -26,6 +26,7 @@ function init(): void {
     host.style.width = '0';
     host.style.height = '0';
     host.style.zIndex = '2147483647';
+    host.setAttribute('popover', 'manual');
     document.body.appendChild(host);
     console.log('[UltraTab] Host created');
 
@@ -33,7 +34,7 @@ function init(): void {
     console.log('[UltraTab] Shadow root attached');
 
     // mountApp injects the styles into the shadow root.
-    mountApp(shadow);
+    mountApp(shadow, host);
     console.log('[UltraTab] App mounted');
 
     const containKey = (e: Event) => {
