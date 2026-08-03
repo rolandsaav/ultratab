@@ -18,7 +18,7 @@
   ],
   "host_permissions": ["<all_urls>"],
   "commands": {
-    "toggle-palette": {
+    "_execute_action": {
       "description": "Toggle the Ultra Tab palette"
     }
   },

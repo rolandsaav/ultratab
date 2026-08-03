@@ -6,10 +6,19 @@
   import Footer from '../components/Footer.svelte';
   import { cubicIn, cubicOut } from 'svelte/easing';
 
-  let { onClosed }: { onClosed?: () => void } = $props();
+  type Surface = 'iframe' | 'popup';
+
+  let {
+    surface,
+    onClosed,
+  }: {
+    surface: Surface;
+    onClosed?: () => void;
+  } = $props();
 
   nav.setRoot({ view: RootList, title: 'Ultra Tab' });
   const Current = $derived(nav.current?.view);
+  const shouldAnimate = $derived(surface === 'iframe');
 
   function teardown() {
     onClosed?.();
@@ -28,6 +37,7 @@
   });
 
   function popupEnter(_node: Element) {
+    if (!shouldAnimate) return { duration: 0 };
     return {
       duration: 200,
       easing: cubicOut,
@@ -37,6 +47,7 @@
   }
 
   function popupExit(_node: Element) {
+    if (!shouldAnimate) return { duration: 0 };
     return {
       duration: 150,
       easing: cubicIn,

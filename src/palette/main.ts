@@ -7,12 +7,19 @@ import '../components/app.css';
 
 // Palette iframe entry: mounts the app and bridges the frame protocol to the embedder.
 const embedded = window.parent !== window; // false in a popup, which has no embedder
+const surface = embedded ? 'iframe' : 'popup';
+document.documentElement.dataset.ultratabSurface = surface;
 
 mount(Shell, {
   target: document.getElementById('app')!,
   props: {
+    surface,
     onClosed: () => {
-      if (embedded) postFrameMessage(window.parent, 'closed', '*');
+      if (embedded) {
+        postFrameMessage(window.parent, 'closed', '*');
+      } else {
+        window.close();
+      }
     },
   },
 });
@@ -30,3 +37,4 @@ window.addEventListener('message', (event) => {
 
 // Announce we're listening so the embedder can flush a toggle that beat us here.
 if (embedded) postFrameMessage(window.parent, 'ready', '*');
+else nav.open(searchCommand);

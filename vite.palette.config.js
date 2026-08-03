@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [svelte()],
   build: {
     rollupOptions: {
-      input: 'palette.html',
+      input: ['palette.html', 'popup.html'],
     },
     outDir: 'dist',
     emptyOutDir: false, // append into dist/; the content build already emptied it

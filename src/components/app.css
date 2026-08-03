@@ -41,6 +41,14 @@ body {
   background: transparent;
 }
 
+:root[data-ultratab-surface='popup'],
+:root[data-ultratab-surface='popup'] body {
+  width: 800px;
+  max-height: 600px;
+  overflow: hidden;
+  background: var(--st-bg);
+}
+
 .overlay {
   position: fixed;
   inset: 0;
@@ -72,6 +80,22 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+:root[data-ultratab-surface='popup'] .overlay {
+  position: static;
+  inset: auto;
+  display: block;
+  padding-top: 0;
+}
+
+:root[data-ultratab-surface='popup'] .popup {
+  width: 100%;
+  max-width: none;
+  height: auto;
+  max-height: 600px;
+  border: none;
+  border-radius: 0;
 }
 
 /* Positioning context so the actions panel floats above the footer, not the whole popup. */

@@ -21,7 +21,7 @@
   ],
   "host_permissions": ["<all_urls>"],
   "commands": {
-    "toggle-palette": {
+    "_execute_action": {
       "suggested_key": { "default": "F1" },
       "description": "Toggle the Ultra Tab palette"
     }

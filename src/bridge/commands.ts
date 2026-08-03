@@ -1,6 +1,7 @@
 import browser from 'webextension-polyfill';
 
-// Must match the `commands` key in both manifests (JSON can't import this const).
+// Background→content command name. The browser shortcut itself uses `_execute_action`;
+// this is the message sent to content scripts on injectable pages.
 export const TOGGLE_PALETTE = 'toggle-palette';
 
 // Background→content envelope; the literal `type` keeps it distinct from the RPC envelope.
