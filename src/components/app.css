@@ -4,11 +4,10 @@
   box-sizing: border-box;
 }
 
-/* Base size and tokens. Lengths are in `em` off this font-size, so the whole
-   palette scales from here and is insulated from the host page's root font-size.
-   --st-rows/--st-row-height are the knobs for how many result rows show. */
-:host {
+/* Base tokens. Lengths are em off this font-size, so the whole palette scales from here. */
+:root {
   font-size: 16px;
+  color-scheme: light !important;
 
   --st-rows: 10;
   --st-row-height: 3.25em;
@@ -20,22 +19,34 @@
   --st-text-muted: #a0a0a0;
   --st-error: #f38ba8;
   --st-hover: rgba(255, 255, 255, 0.1);
-  /* Popup corner radius. Also the footer's horizontal padding, so its contents
-     clear the rounded corners instead of overlapping the curve. */
+  /* Popup corner radius; also the footer's horizontal padding, so contents clear the corners. */
   --st-radius: 1em;
-  /* Sole accent, reserved for the single active tab's row tint. */
+  /* Sole accent — the active tab's row tint. */
   --st-accent: #89b4fa;
-  /* List scrollbar width. Also the gutter the header reserves so the source
-     toggles stay column-aligned with the row actions whether or not it scrolls. */
+  /* List scrollbar width; also the gutter the header reserves to keep toggles column-aligned. */
   --st-scrollbar: 0.75em;
-  /* Size of every icon square — header/row controls, the back button, and each
-     row's leading favicon — so all the icon columns line up. --st-edge-pad is
-     the left/right inset that anchors them to the same edge. */
+  /* Icon-square size for all controls, the back button, and row favicons, so the columns
+     line up; --st-edge-pad is their shared left/right inset. */
   --st-control-size: 1.75em;
   --st-control-gap: 0.25em;
   --st-edge-pad: 0.75em;
-  /* Glyph size inside a control — one value for header toggles and row actions. */
+  /* Glyph size inside a control. */
   --st-control-icon: 1em;
+}
+
+/* Transparent document so the page shows through the iframe. */
+html,
+body {
+  margin: 0;
+  background: transparent;
+}
+
+:root[data-ultratab-surface='popup'],
+:root[data-ultratab-surface='popup'] body {
+  width: 800px;
+  max-height: 600px;
+  overflow: hidden;
+  background: var(--st-bg);
 }
 
 .overlay {
@@ -45,8 +56,6 @@
   align-items: flex-start;
   justify-content: center;
   padding-top: 12vh;
-  /* Base color for the palette. Not on :host — the host node's inline `all: initial`
-     (page isolation) overrides it there, leaving `currentColor` icons black. */
   color: var(--st-text);
   font-family:
     'Inter',
@@ -60,8 +69,7 @@
     sans-serif;
 }
 
-/* Capped to the viewport so a short window shrinks the list rather than
-   clipping rows off the bottom where they can't be scrolled to. */
+/* Capped to the viewport so a short window shrinks the list instead of clipping rows. */
 .popup {
   width: 37.5em;
   max-width: 92vw;
@@ -74,8 +82,23 @@
   flex-direction: column;
 }
 
-/* Wraps the list and actions panel. Positioning context so the panel floats
-   above the footer rather than over the whole popup. */
+:root[data-ultratab-surface='popup'] .overlay {
+  position: static;
+  inset: auto;
+  display: block;
+  padding-top: 0;
+}
+
+:root[data-ultratab-surface='popup'] .popup {
+  width: 100%;
+  max-width: none;
+  height: auto;
+  max-height: 600px;
+  border: none;
+  border-radius: 0;
+}
+
+/* Positioning context so the actions panel floats above the footer, not the whole popup. */
 .body {
   position: relative;
   display: flex;
@@ -83,8 +106,7 @@
   min-height: 0;
 }
 
-/* bits-ui's Command.Root wrapper. Continues the flex column from .popup so the
-   height constraint reaches .list and lets it shrink. */
+/* bits-ui Command.Root — continues .popup's flex column so the height constraint reaches .list. */
 .command {
   display: flex;
   flex-direction: column;
@@ -130,11 +152,8 @@
   color: var(--st-text-muted);
 }
 
-/* Search input paired with the source-toggle icons on its right, sharing one
-   bottom border so the two read as a single row. It reserves the same scrollbar
-   gutter as the list (via the same mechanism, so the actual width need not be
-   guessed) and the same right inset, keeping the toggles column-aligned with the
-   row actions whether or not the list scrolls. */
+/* Search input + source toggles sharing one bottom border. Reserves the same scrollbar gutter
+   and right inset as the list, keeping the toggles column-aligned with the row actions. */
 .input-row {
   display: flex;
   align-items: center;
@@ -156,12 +175,10 @@
   border-bottom: none;
 }
 
-/* Back arrow, shown left of the input when a view is pushed onto the stack. A
-   bordered, Raycast-style icon square sharing --st-control-size and the
-   --st-edge-pad inset with .lead, so it centers on the favicon column below. */
+/* Back arrow, left of the input when a view is pushed. Icon square sharing --st-control-size
+   and --st-edge-pad with .lead, so it centers on the favicon column below. */
 .back {
-  /* Reset the UA button font so the em-based size and margin resolve against
-     :host (16px), not the browser's smaller default button font. */
+  /* Reset the UA button font so em sizes resolve against :root (16px). */
   font: inherit;
   display: inline-flex;
   align-items: center;
@@ -193,8 +210,7 @@
   padding-left: 0.5em;
 }
 
-/* Right-aligned control cluster — shared by the header's source toggles and each
-   row's inline actions, so both occupy identical columns. The single source of
+/* Right-aligned cluster shared by header toggles and row actions — the single source of
    truth for their box size and spacing. */
 .controls {
   display: inline-flex;
@@ -223,18 +239,18 @@
     background 0.08s ease;
 }
 
-/* One glyph size across both clusters, so header toggles and row actions match. */
+/* One glyph size across both clusters. */
 .control svg {
   width: var(--st-control-icon);
   height: var(--st-control-icon);
 }
 
-/* Hidden by default; the active row's action layer swaps it in. */
+/* Hidden by default; the active row swaps it in. */
 .control-icon--hover {
   display: none;
 }
 
-/* Header source toggles: white when the source is enabled. */
+/* Enabled source toggle: white. */
 .source.enabled {
   color: var(--st-text);
 }
@@ -244,8 +260,7 @@
   background: var(--st-hover);
 }
 
-/* Shows --st-rows rows when there's room, otherwise shrinks to fit the popup
-   and scrolls internally. */
+/* Shows --st-rows rows when there's room, else shrinks to fit and scrolls. */
 .list {
   list-style: none;
   margin: 0;
@@ -254,9 +269,7 @@
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  /* Reserve the scrollbar gutter even when not scrolling, so the row content's
-     right edge — and thus the action columns — stays put whether or not the list
-     scrolls, keeping it aligned with the header's source toggles. */
+  /* Reserve the gutter even when not scrolling, so the action columns stay put and aligned. */
   scrollbar-gutter: stable;
 }
 
@@ -265,11 +278,8 @@
   overflow-y: hidden;
 }
 
-/* Both scroll containers get a thin, theme-matched scrollbar with a transparent
-   track, so the popup shows through instead of the OS default's darker band.
-   `.input-row` is included not to scroll but so its reserved gutter is sized by
-   the identical rules as the list's — otherwise the two reserve different widths
-   and the header toggles drift out of column with the row actions. */
+/* Thin, theme-matched scrollbars with a transparent track. .input-row is included so its
+   reserved gutter matches the list's exactly, keeping the columns aligned. */
 .list,
 .actions-list,
 .input-row {
@@ -277,7 +287,7 @@
   scrollbar-color: var(--st-border) transparent;
 }
 
-/* WebKit / older Chromium equivalent of the above. */
+/* WebKit / older Chromium equivalent. */
 .list::-webkit-scrollbar,
 .actions-list::-webkit-scrollbar {
   width: var(--st-scrollbar);
@@ -301,7 +311,7 @@
   border: 0.25em solid transparent;
 }
 
-/* Fixed height per row so the list can render an exact --st-rows count. */
+/* Fixed row height so the list renders an exact --st-rows count. */
 .item {
   display: flex;
   align-items: center;
@@ -323,15 +333,14 @@
   border-top: none;
 }
 
-/* Active-row highlight, keyed off data-selected (not :hover) so hover can't move it. */
+/* Highlight keyed off data-selected (not :hover) so hover can't move it. */
 .item:focus-visible,
 .item[data-selected] {
   background: var(--st-border);
   outline: none;
 }
 
-/* The single active tab (the page behind the palette): a faint accent wash, always
-   on, so it's spottable at rest without a label. */
+/* The active tab (page behind the palette): a faint, always-on accent wash. */
 .item.current {
   background: color-mix(in srgb, var(--st-accent) 14%, transparent);
 }
@@ -342,8 +351,7 @@
   background: color-mix(in srgb, var(--st-accent) 22%, var(--st-border));
 }
 
-/* Leading icon square, mirroring the back button (see .back) so a row's favicon
-   centers in the same column as the back arrow above it. */
+/* Leading icon square mirroring .back, so a row's favicon shares the back arrow's column. */
 .lead {
   display: inline-flex;
   align-items: center;
@@ -366,7 +374,7 @@
   min-width: 0;
 }
 
-/* Trailing dot marking a tab not yet visited this session. */
+/* Trailing dot: a tab not yet visited this session. */
 .badge {
   flex-shrink: 0;
   width: 0.5em;
@@ -375,22 +383,18 @@
   background: var(--st-text-muted);
 }
 
-/* Row inline actions (`.control` handles box/size/spacing) start hidden; their
-   slots stay reserved via opacity, not display, so nothing shifts as they fade in
-   on hover/highlight. */
+/* Row actions start hidden; slots stay reserved via opacity (not display) so nothing shifts. */
 .item-action {
   opacity: 0;
 }
 
-/* A control that doubles as a state indicator (pinned, muted, playing): visible
-   at rest and brighter, to read as an active state rather than a latent action. */
+/* Doubles as a state indicator (pinned/muted/playing): visible at rest and brighter. */
 .item-action.persistent {
   opacity: 1;
   color: var(--st-text);
 }
 
-/* The active row's revealed buttons and icon swap, gated on data-selected and
-   :not(.list--inert) — no :hover path, so both gates always apply. */
+/* Active row reveals its buttons and swaps the control icon; gated on data-selected, no :hover. */
 .list:not(.list--inert) .item[data-selected] {
   .item-action {
     opacity: 1;
@@ -438,16 +442,13 @@
   text-align: center;
 }
 
-/* Persistent hint bar: the highlighted item's primary action and the Actions
-   shortcut, clustered at the bottom-right with keycaps, Raycast-style. */
+/* Hint bar: the highlighted item's primary action + the Actions shortcut, bottom-right. */
 .footer {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 0.45em;
-  /* Horizontal padding equals the corner radius so contents never sit over the
-     rounded corners. The size-down is on the children (below), not here, so this
-     box measures em at the full palette scale — making the padding a true radius. */
+  /* Horizontal padding equals the corner radius so contents clear the rounded corners. */
   padding: 0.375em var(--st-radius);
   border-top: var(--st-border-w) solid var(--st-border);
   flex-shrink: 0;
@@ -457,7 +458,7 @@
   font-size: 0.75em;
 }
 
-/* Left-aligned status; the auto margin pushes the hints to the right edge. */
+/* Auto margin pushes the hints to the right edge. */
 .footer-info {
   margin-right: auto;
   color: var(--st-text-muted);
@@ -549,7 +550,7 @@
   }
 }
 
-/* Actions panel — a nested command list, with its filter input below the list. */
+/* Actions panel — a nested command list with its filter input below. */
 .actions {
   width: 100%;
   display: flex;

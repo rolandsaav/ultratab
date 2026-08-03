@@ -1,5 +1,2 @@
-/** Vite `?inline` CSS imports resolve to the stylesheet as a string. */
-declare module '*.css?inline' {
-  const css: string;
-  export default css;
-}
+/** Side-effect CSS import: Vite injects the stylesheet into the document. */
+declare module '*.css';

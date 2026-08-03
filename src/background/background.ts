@@ -4,19 +4,64 @@ import { TOGGLE_PALETTE, sendPaletteCommand } from '../bridge/commands';
 import '../modules/search/background';
 import '../modules/downloads/background';
 
+const POPUP_PATH = 'popup.html';
+const INJECTABLE_PROTOCOLS = new Set(['http:', 'https:']);
+
 /** Fire-and-forget a visited-set update, logging any failure. */
 function track(label: string, task: Promise<unknown>): void {
   task.catch((err) => console.error(`[UltraTab] ${label} failed:`, err));
 }
 
-/** Relay a palette command to the active tab; rejects on unreachable tabs (e.g. chrome://). */
-async function relayToActiveTab(name: string): Promise<void> {
+function isInjectableUrl(url: string | undefined): boolean {
+  if (!url) return false;
+  try {
+    return INJECTABLE_PROTOCOLS.has(new URL(url).protocol);
+  } catch {
+    return false;
+  }
+}
+
+async function setActionPopup(tabId: number, popup: string): Promise<void> {
+  await browser.action.setPopup({ tabId, popup });
+}
+
+async function setActionPopupForTab(tab: browser.Tabs.Tab): Promise<void> {
+  if (tab.id === undefined) return;
+  await setActionPopup(tab.id, isInjectableUrl(tab.url) ? '' : POPUP_PATH);
+}
+
+async function syncActiveTabPopup(): Promise<void> {
   const [active] = await browser.tabs.query({
     currentWindow: true,
     active: true,
   });
-  if (active?.id !== undefined) {
-    await sendPaletteCommand(active.id, name);
+  if (active) await setActionPopupForTab(active);
+}
+
+async function openActionPopup(
+  tabId: number,
+  { restore = false }: { restore?: boolean } = {},
+): Promise<void> {
+  await setActionPopup(tabId, POPUP_PATH);
+  try {
+    await browser.action.openPopup();
+  } finally {
+    if (restore) await setActionPopup(tabId, '');
+  }
+}
+
+/** Relay to content when possible; otherwise fall back to the native action popup. */
+async function toggleForTab(tab: browser.Tabs.Tab): Promise<void> {
+  if (tab.id === undefined) return;
+  if (!isInjectableUrl(tab.url)) {
+    await openActionPopup(tab.id);
+    return;
+  }
+
+  try {
+    await sendPaletteCommand(tab.id, TOGGLE_PALETTE);
+  } catch {
+    await openActionPopup(tab.id, { restore: true });
   }
 }
 
@@ -27,22 +72,24 @@ browser.runtime.onInstalled.addListener(() => track('seed', seed()));
 
 // Keep the visited set in step with real activity.
 browser.tabs.onActivated.addListener(({ tabId }) =>
-  track('markVisited', markVisited(tabId)),
+  track(
+    'tab-activated',
+    Promise.all([
+      markVisited(tabId),
+      browser.tabs.get(tabId).then(setActionPopupForTab),
+    ]),
+  ),
 );
 browser.tabs.onRemoved.addListener((tabId) => track('forget', forget(tabId)));
-
-// Command shortcuts fire only in the worker; forward the intent to the page, which owns the state.
-browser.commands.onCommand.addListener((name) => {
-  switch (name) {
-    case TOGGLE_PALETTE:
-      track('toggle-palette', relayToActiveTab(name));
-      break;
+browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.url || changeInfo.status === 'complete') {
+    track('sync-action-popup', setActionPopupForTab({ ...tab, id: tabId }));
   }
 });
 
-// Clicking the toolbar icon is a second trigger for the same toggle intent.
+// On injectable pages the action has no popup, so clicks route here and toggle the iframe.
 browser.action.onClicked.addListener((tab) => {
-  if (tab.id !== undefined) {
-    track('toggle-palette', sendPaletteCommand(tab.id, TOGGLE_PALETTE));
-  }
+  track('toggle-palette', toggleForTab(tab));
 });
+
+track('sync-action-popup', syncActiveTabPopup());
