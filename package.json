@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "build": "vite build && vite build --config vite.background.config.js && vite build --config vite.palette.config.js",
-    "postbuild": "cp public/manifest-chrome.json dist/manifest.json",
-    "build:firefox": "vite build && vite build --config vite.background.config.js && vite build --config vite.palette.config.js && cp public/manifest-firefox.json dist/manifest.json",
-    "release": "bash scripts/release.sh",
+    "postbuild": "node scripts/copy-manifest.mjs chrome",
+    "build:firefox": "vite build && vite build --config vite.background.config.js && vite build --config vite.palette.config.js && node scripts/copy-manifest.mjs firefox",
+    "release": "node scripts/release.mjs",
     "verify:firefox": "bun run release --target firefox --no-zip && web-ext lint --source-dir dist-firefox",
     "dev": "vite build --watch --mode development",
     "check": "svelte-check",
