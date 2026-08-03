@@ -21,9 +21,10 @@ done
 
 version=$(jq -r .version package.json)
 
-# Content build empties dist/ and copies public/; the background build appends.
+# Content build empties dist/ and copies public/; the background and palette builds append.
 bunx vite build
 bunx vite build --config vite.background.config.js
+bunx vite build --config vite.palette.config.js
 
 for t in $targets; do
   src="public/manifest-$t.json"

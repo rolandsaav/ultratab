@@ -6,20 +6,26 @@
   import Footer from '../components/Footer.svelte';
   import { cubicIn, cubicOut } from 'svelte/easing';
 
-  let { host }: { host: HTMLElement } = $props();
+  let { onClosed }: { onClosed?: () => void } = $props();
 
   nav.setRoot({ view: RootList, title: 'Ultra Tab' });
   const Current = $derived(nav.current?.view);
 
-  /* Promote the host into the top layer for as long as the palette is visible. */
-  const showTopLayer = () => {
-    /* Re-attach if the page replaced document.body and orphaned the host. */
-    if (!host.isConnected) document.body?.appendChild(host);
-    if (host.isConnected && !host.matches(':popover-open')) host.showPopover();
-  };
-  const hideTopLayer = () => {
-    if (host.matches(':popover-open')) host.hidePopover();
-  };
+  function teardown() {
+    onClosed?.();
+  }
+
+  // Own Escape in capture so the shell can step back through its navigation stack.
+  $effect(() => {
+    function onKeydown(e: KeyboardEvent) {
+      if (e.key !== 'Escape' || !nav.visible) return;
+      e.preventDefault();
+      e.stopPropagation();
+      nav.escape();
+    }
+    window.addEventListener('keydown', onKeydown, true);
+    return () => window.removeEventListener('keydown', onKeydown, true);
+  });
 
   function popupEnter(_node: Element) {
     return {
@@ -47,8 +53,7 @@
     tabindex="0"
     in:popupEnter
     out:popupExit
-    onintrostart={showTopLayer}
-    onoutroend={hideTopLayer}
+    onoutroend={teardown}
     onclick={(e) => {
       if (e.target === e.currentTarget) nav.close();
     }}
