@@ -52,7 +52,7 @@
       duration: 180,
       easing: cubicIn,
       css: (t: number) =>
-        `opacity: ${t}; transform: translateY(${(1 - t) * -48}px);`,
+        `opacity: ${t}; transform: translateY(${(1 - t) * -12}vh);`,
     };
   }
 </script>
