@@ -71,7 +71,7 @@ body {
 
 /* Capped to the viewport so a short window shrinks the list instead of clipping rows. */
 .popup {
-  width: 44em;
+  width: 46em;
   max-width: 92vw;
   max-height: calc(100vh - 24vh);
   background: var(--st-bg);
