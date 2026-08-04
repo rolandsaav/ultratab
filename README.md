@@ -21,10 +21,8 @@ I've been prototyping this for almost a year now and this is the third or fourth
 
 The steps are slightly different between browsers, but they both start the same way:
 
-`npm install`
-`npm run release`
-
-If you use Bun, `bun install` and `bun run release` work too.
+`bun install`
+`bun run release`
 
 That builds the extension and hands you a clean, ready-to-load folder per browser: `dist-chrome/` and `dist-firefox/`, each with a single `manifest.json`.
 It also drops a matching `.zip` next to each in case you want to hand one off; pass `--no-zip` if you don't care about those, or `--target chrome` / `--target firefox` if you only want one.
