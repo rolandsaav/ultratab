@@ -39,20 +39,20 @@
   function popupEnter(_node: Element) {
     if (!shouldAnimate) return { duration: 0 };
     return {
-      duration: 200,
+      duration: 180,
       easing: cubicOut,
       css: (t: number) =>
-        `opacity: ${t}; transform: scale(${0.9 + 0.1 * t}) translateY(${(1 - t) * 24}px);`,
+        `opacity: ${t}; transform: scale(${0.96 + 0.04 * t});`,
     };
   }
 
   function popupExit(_node: Element) {
     if (!shouldAnimate) return { duration: 0 };
     return {
-      duration: 150,
+      duration: 180,
       easing: cubicIn,
       css: (t: number) =>
-        `opacity: ${t}; transform: scale(${0.8 + 0.2 * t}) translateY(${(1 - t) * -160}px);`,
+        `opacity: ${t}; transform: scale(${0.96 + 0.04 * t});`,
     };
   }
 </script>
