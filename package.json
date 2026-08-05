@@ -45,6 +45,7 @@
   "dependencies": {
     "@leeoniya/ufuzzy": "^1.0.19",
     "@lucide/svelte": "^1.16.0",
+    "@tanstack/svelte-virtual": "^3.13.35",
     "bits-ui": "^2.18.1",
     "webextension-polyfill": "^0.12.0"
   }

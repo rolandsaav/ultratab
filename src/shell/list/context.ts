@@ -46,8 +46,7 @@ export interface ListContext {
 export const [getListContext, setListContext] = createContext<ListContext>();
 
 /** A row's actions flattened, primary first — for the panel and shortcut matching. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- subjects are heterogeneous across rows
-export function allActions(actions: RowActions): Command<any>[] {
+export function allActions<T>(actions: RowActions<T>): Command<T>[] {
   return actions.secondary?.length
     ? [actions.primary, ...actions.secondary]
     : [actions.primary];

@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import List from '../../shell/list/List.svelte';
-  import ListItem from '../../shell/list/ListItem.svelte';
   import DownloadRow from './DownloadRow.svelte';
   import { downloadsApi } from './api';
   import { commandsForDownload } from './commands';
@@ -39,14 +38,15 @@
 </script>
 
 <List
+  {items}
+  getId={(item) => item.id}
+  getActions={commandsForDownload}
   bind:query
   placeholder="Search downloads…"
   onSearchChange={(v) => void runQuery(v)}
   onRefresh={refresh}
 >
-  {#each items as item (item.id)}
-    <ListItem id={item.id} subject={item} actions={commandsForDownload(item)}>
-      <DownloadRow {item} />
-    </ListItem>
-  {/each}
+  {#snippet row(item)}
+    <DownloadRow {item} />
+  {/snippet}
 </List>

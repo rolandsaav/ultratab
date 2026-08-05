@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import List from '../../shell/list/List.svelte';
-  import ListItem from '../../shell/list/ListItem.svelte';
   import SourceIcons from './SourceIcons.svelte';
   import ItemRow from './ItemRow.svelte';
   import { searchApi } from './api';
@@ -110,6 +109,10 @@
 </script>
 
 <List
+  {items}
+  getId={(item) => item.id}
+  getActions={commandsForItem}
+  getRowClass={(item) => (item.active ? 'current' : undefined)}
   bind:query
   {placeholder}
   footerInfo={resultCount}
@@ -121,14 +124,7 @@
   {#snippet header()}
     <SourceIcons {enabled} onToggle={toggle} />
   {/snippet}
-  {#each items as item (item.id)}
-    <ListItem
-      id={item.id}
-      subject={item}
-      actions={commandsForItem(item)}
-      rowClass={item.active ? 'current' : undefined}
-    >
-      <ItemRow {item} />
-    </ListItem>
-  {/each}
+  {#snippet row(item)}
+    <ItemRow {item} />
+  {/snippet}
 </List>

@@ -1,34 +1,56 @@
 <script lang="ts" generics="T">
-  import { Command } from 'bits-ui';
   import type { Snippet } from 'svelte';
-  import { getListContext, type RowActions } from './context';
+  import type { RowActions } from './context';
 
   interface Props {
     id: string;
+    domId?: string;
     actions: RowActions<T>;
-    /** Value passed to an action's perform; omit for void/root commands. */
-    subject?: T;
+    selected?: boolean;
     /** Extra class on the row element — a module's per-row modifier (e.g. `current`). */
     rowClass?: string;
+    style?: string;
+    onSelect: () => void;
+    onHighlight: () => void;
+    onOpenActions: () => void;
+    onRunInline: (index: number) => void;
     children: Snippet;
   }
-  let { id, actions, subject, rowClass, children }: Props = $props();
-  const ctx = getListContext();
-
-  $effect(() => {
-    ctx.register(id, { subject, actions });
-    return () => ctx.unregister(id);
-  });
+  let {
+    id,
+    domId,
+    actions,
+    selected = false,
+    rowClass,
+    style,
+    onSelect,
+    onHighlight,
+    onOpenActions,
+    onRunInline,
+    children,
+  }: Props = $props();
 </script>
 
-<Command.Item
-  value={id}
-  onSelect={() => ctx.select(id)}
+<div
+  id={domId}
+  role="option"
+  aria-selected={selected}
+  data-selected={selected ? '' : undefined}
+  data-value={id}
+  tabindex="-1"
+  onclick={onSelect}
+  onpointermove={onHighlight}
+  onkeydown={(e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
+    onSelect();
+  }}
   oncontextmenu={(e) => {
     e.preventDefault();
-    ctx.openActions(id);
+    onOpenActions();
   }}
-  class={rowClass ? `item ${rowClass}` : 'item'}
+  class={rowClass ? `item virtual-item ${rowClass}` : 'item virtual-item'}
+  {style}
 >
   {@render children()}
   {#if actions.inline}
@@ -43,7 +65,7 @@
           aria-label={action.command.title}
           onclick={(e) => {
             e.stopPropagation();
-            ctx.runInline(id, i);
+            onRunInline(i);
           }}
         >
           {#if action.hoverIcon}
@@ -57,4 +79,4 @@
       {/each}
     </div>
   {/if}
-</Command.Item>
+</div>
