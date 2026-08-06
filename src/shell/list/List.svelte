@@ -1,28 +1,31 @@
-<script lang="ts">
+<script lang="ts" generics="T, S = T">
   import type { Snippet } from 'svelte';
   import { SvelteMap } from 'svelte/reactivity';
-  import { Command } from 'bits-ui';
+  import { get } from 'svelte/store';
+  import { createVirtualizer } from '@tanstack/svelte-virtual';
   import ArrowLeft from '@lucide/svelte/icons/arrow-left';
   import type { Command as PaletteCommand } from '../../commands/command';
   import { nav } from '../nav.svelte';
   import { footer } from '../footer.svelte';
   import {
     autofocus,
-    tabNav,
     matchAction,
     matchesShortcut,
     OPEN_ACTIONS_SHORTCUT,
   } from '../../components/utils.svelte';
   import ActionsPanel from '../../components/ActionsPanel.svelte';
   import { runCommand } from './run';
-  import {
-    setListContext,
-    allActions,
-    hasSecondaryActions,
-    type ItemEntry,
-  } from './context';
+  import ListItem from './ListItem.svelte';
+  import { allActions, hasSecondaryActions, type RowActions } from './context';
+
+  const OVERSCAN = 6;
 
   interface Props {
+    items: T[];
+    getId: (item: T) => string;
+    getActions: (item: T) => RowActions<S>;
+    getSubject?: (item: T) => S;
+    getRowClass?: (item: T) => string | undefined;
     placeholder: string;
     isLoading?: boolean;
     /** The input value — bindable so a module can rewrite it (e.g. clear on an @-command). */
@@ -38,9 +41,15 @@
     onUpdate?: () => void;
     /** Left-aligned footer text for this view, e.g. a result count. */
     footerInfo?: string;
-    children: Snippet;
+    row: Snippet<[T]>;
   }
+
   let {
+    items,
+    getId,
+    getActions,
+    getSubject,
+    getRowClass,
     placeholder,
     isLoading = false,
     query = $bindable(''),
@@ -50,16 +59,37 @@
     onRemove,
     onUpdate,
     footerInfo,
-    children,
+    row,
   }: Props = $props();
 
-  const registry = new SvelteMap<string, ItemEntry>();
-  let highlightedId = $state('');
+  let highlightedIndex = $state(0);
   let inputRef = $state<HTMLInputElement | null>(null);
-  let commandRoot = $state<ReturnType<typeof Command.Root> | null>(null);
+  let listRef = $state<HTMLDivElement | null>(null);
+  let measuredListRef = $state<HTMLDivElement | null>(null);
+  let rowHeight = $state(1);
   let actionsOpen = $state(false);
   // Kept after close so the panel retains its contents while it animates out.
   let actionTargetId = $state('');
+
+  const virtualizer = createVirtualizer<HTMLDivElement, HTMLDivElement>({
+    count: 0,
+    getScrollElement: () => listRef,
+    estimateSize: () => rowHeight,
+    overscan: OVERSCAN,
+  });
+
+  const indexById = $derived.by(() => {
+    const map = new SvelteMap<string, number>();
+    items.forEach((item, index) => map.set(getId(item), index));
+    return map;
+  });
+  const highlightedItem = $derived(items[highlightedIndex]);
+  const highlightedId = $derived(idForItem(highlightedItem));
+  const highlightedActions = $derived(actionsForItem(highlightedItem));
+  const actionTargetIndex = $derived(indexById.get(actionTargetId));
+  const panelItem = $derived(itemAt(actionTargetIndex));
+  const panelActions = $derived(actionsForItem(panelItem));
+  const activeDescendant = $derived(activeDescendantId());
 
   // Refocus the main input when the actions panel is closed.
   autofocus(
@@ -67,15 +97,36 @@
     () => !actionsOpen,
   );
 
-  const highlightedEntry = $derived(registry.get(highlightedId));
-  const panelEntry = $derived(registry.get(actionTargetId));
+  $effect(() => {
+    const node = listRef;
+    if (!node || node === measuredListRef) return;
+    measuredListRef = node;
+    rowHeight = measureCssLength(node, '--st-row-height');
+  });
+
+  $effect(() => {
+    get(virtualizer).setOptions({
+      count: items.length,
+      getScrollElement: () => listRef,
+      estimateSize: () => rowHeight,
+      overscan: OVERSCAN,
+    });
+  });
+
+  $effect(() => {
+    if (items.length === 0) {
+      highlightedIndex = 0;
+      return;
+    }
+    if (highlightedIndex >= items.length) highlightedIndex = items.length - 1;
+  });
 
   // Sync the shell footer for this view. Every view uses List, so mounting one
   // overwrites the previous view's values — no manual reset.
   $effect(() => {
-    const actions = highlightedEntry?.actions;
-    footer.primaryLabel = actions?.primary.title;
-    footer.hasActions = !!actions && hasSecondaryActions(actions);
+    footer.primaryLabel = highlightedActions?.primary.title;
+    footer.hasActions =
+      !!highlightedActions && hasSecondaryActions(highlightedActions);
     footer.info = footerInfo;
   });
 
@@ -89,12 +140,59 @@
     return () => nav.setEscapeInterceptor(null);
   });
 
+  function scrollToHighlighted(): void {
+    if (items.length === 0) return;
+    get(virtualizer).scrollToIndex(highlightedIndex, { align: 'auto' });
+  }
+
+  function measureCssLength(scope: HTMLElement, property: string): number {
+    const probe = document.createElement('div');
+    probe.style.position = 'absolute';
+    probe.style.visibility = 'hidden';
+    probe.style.pointerEvents = 'none';
+    probe.style.height = `var(${property})`;
+    scope.append(probe);
+    const height = probe.getBoundingClientRect().height;
+    probe.remove();
+    return height || rowHeight;
+  }
+
+  function itemAt(index: number | undefined): T | undefined {
+    if (index == null) return undefined;
+    return items[index];
+  }
+
+  function idForItem(item: T | undefined): string {
+    if (!item) return '';
+    return getId(item);
+  }
+
+  function actionsForItem(item: T | undefined): RowActions<S> | undefined {
+    if (!item) return undefined;
+    return getActions(item);
+  }
+
+  function activeDescendantId(): string | undefined {
+    if (items.length === 0) return undefined;
+    return `palette-option-${highlightedIndex}`;
+  }
+
+  function setHighlightedIndex(index: number): void {
+    if (items.length === 0) {
+      highlightedIndex = 0;
+      return;
+    }
+    highlightedIndex = ((index % items.length) + items.length) % items.length;
+    scrollToHighlighted();
+  }
+
   function openActions(id: string): void {
-    const actions = registry.get(id)?.actions;
+    const index = indexById.get(id);
+    const item = itemAt(index);
+    const actions = actionsForItem(item);
     if (!actions || !hasSecondaryActions(actions)) return;
     actionTargetId = id;
-    // Pin the highlight to the panel's row.
-    highlightedId = id;
+    if (index != null) highlightedIndex = index;
     actionsOpen = true;
   }
 
@@ -115,58 +213,48 @@
     e.stopPropagation();
   }
 
-  // Step the highlight off the row about to be removed, so selection and scroll
-  // don't reset. Down, or up on the last row (which `loop` would wrap to the top);
-  // bits-ui updates the bound `highlightedId`.
   function stepHighlightOffCurrent(): void {
-    const items = commandRoot?.getValidItems() ?? [];
     if (items.length <= 1) return;
-    const idx = items.findIndex((el) => el.hasAttribute('data-selected'));
-    if (idx < 0) return;
-    const atLast = idx === items.length - 1;
-    commandRoot?.updateSelectedByItem(atLast ? -1 : 1);
+    setHighlightedIndex(nextIndexAfterRemoval());
+  }
+
+  function nextIndexAfterRemoval(): number {
+    if (highlightedIndex === items.length - 1) {
+      return highlightedIndex - 1;
+    }
+    return highlightedIndex + 1;
   }
 
   // Run a row's command; if it removes the highlighted row, step off it first.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- rows hold heterogeneous subjects
-  function runRow(command: PaletteCommand<any>, id: string): void {
-    const entry = registry.get(id);
-    if (!entry) return;
+  function subjectFor(item: T): S {
+    if (getSubject) return getSubject(item);
+    return item as unknown as S;
+  }
+
+  function runRow(command: PaletteCommand<S>, item: T): void {
+    const id = getId(item);
     const removing =
       command.run.kind === 'perform' && command.run.after === 'remove';
     if (removing && id === highlightedId) {
       stepHighlightOffCurrent();
     }
-    void runCommand(command, entry.subject, {
+    void runCommand(command, subjectFor(item), {
       onRefresh,
       onRemove: () => onRemove?.(id),
       onUpdate,
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- panel commands act on heterogeneous subjects
-  function runFromPanel(command: PaletteCommand<any>): void {
-    const id = actionTargetId;
+  function runFromPanel(command: PaletteCommand<S>): void {
+    const item = panelItem;
     closeActions();
-    runRow(command, id);
+    if (item) runRow(command, item);
   }
-
-  setListContext({
-    register: (id, entry) => registry.set(id, entry),
-    unregister: (id) => registry.delete(id),
-    select: (id) => {
-      const entry = registry.get(id);
-      if (entry) runRow(entry.actions.primary, id);
-    },
-    openActions,
-    runInline: (id, index) => {
-      const command = registry.get(id)?.actions.inline?.[index]?.command;
-      if (command) runRow(command, id);
-    },
-  });
 
   function onInput(value: string): void {
     query = value;
+    highlightedIndex = 0;
+    get(virtualizer).scrollToIndex(0);
     onSearchChange?.(value);
   }
 
@@ -176,29 +264,59 @@
       if (highlightedId) openActions(highlightedId);
       return;
     }
-    const entry = highlightedEntry;
-    if (entry) {
-      const match = matchAction(e, allActions(entry.actions));
-      if (match) {
+
+    if (highlightedActions) {
+      const match = matchAction(e, allActions(highlightedActions));
+      if (match && highlightedItem) {
         e.preventDefault();
-        runRow(match, highlightedId);
+        runRow(match, highlightedItem);
         return;
       }
     }
-    tabNav(e, commandRoot);
+
+    if (e.key === 'Tab' || e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      setHighlightedIndex(highlightedIndex + keyboardDelta(e));
+      return;
+    }
+
+    if (e.key === 'Home') {
+      e.preventDefault();
+      setHighlightedIndex(0);
+      return;
+    }
+
+    if (e.key === 'End') {
+      e.preventDefault();
+      setHighlightedIndex(items.length - 1);
+      return;
+    }
+
+    if (e.key === 'Enter' && highlightedItem && highlightedActions) {
+      e.preventDefault();
+      runRow(highlightedActions.primary, highlightedItem);
+    }
+  }
+
+  function keyboardDelta(e: KeyboardEvent): number {
+    if (e.key === 'ArrowUp' || e.shiftKey) return -1;
+    return 1;
+  }
+
+  function listClass(): string {
+    if (actionsOpen) return 'list list--inert';
+    return 'list';
+  }
+
+  function rowClass(item: T): string | undefined {
+    return getRowClass?.(item);
   }
 </script>
 
-<Command.Root
-  bind:this={commandRoot}
-  shouldFilter={false}
-  loop
-  bind:value={highlightedId}
-  disablePointerSelection={actionsOpen}
-  onkeydown={onKeydown}
+<div
+  class="command"
   onpointerdowncapture={armClickSwallow}
   onclickcapture={swallowClickWhileDismissing}
-  class="command"
 >
   {#if isLoading}
     <div class="header"><span class="loading">Loading…</span></div>
@@ -215,28 +333,64 @@
         <ArrowLeft size={18} />
       </button>
     {/if}
-    <Command.Input
-      bind:ref={inputRef}
+    <input
+      bind:this={inputRef}
+      role="combobox"
+      aria-expanded="true"
+      aria-controls="palette-list"
+      aria-activedescendant={activeDescendant}
       value={query}
       oninput={(e) => onInput(e.currentTarget.value)}
+      onkeydown={onKeydown}
       {placeholder}
       class="input"
     />
     {#if header}{@render header()}{/if}
   </div>
 
-  <Command.List class={actionsOpen ? 'list list--inert' : 'list'}>
-    <Command.Empty class="empty">No results found</Command.Empty>
-    {@render children()}
-  </Command.List>
-</Command.Root>
+  <div bind:this={listRef} id="palette-list" role="listbox" class={listClass()}>
+    {#if items.length === 0}
+      <div class="empty">No results found</div>
+    {:else}
+      <div
+        class="virtual-space"
+        style={`height: ${$virtualizer.getTotalSize()}px;`}
+      >
+        {#each $virtualizer.getVirtualItems() as virtualRow (virtualRow.key)}
+          {@const item = items[virtualRow.index]}
+          {@const id = getId(item)}
+          {@const actions = getActions(item)}
+          <ListItem
+            {id}
+            domId={`palette-option-${virtualRow.index}`}
+            {actions}
+            selected={virtualRow.index === highlightedIndex}
+            rowClass={rowClass(item)}
+            style={`transform: translateY(${virtualRow.start}px);`}
+            onSelect={() => runRow(actions.primary, item)}
+            onHighlight={() => {
+              highlightedIndex = virtualRow.index;
+            }}
+            onOpenActions={() => openActions(id)}
+            onRunInline={(index) => {
+              const command = actions.inline?.[index]?.command;
+              if (command) runRow(command, item);
+            }}
+          >
+            {@render row(item)}
+          </ListItem>
+        {/each}
+      </div>
+    {/if}
+  </div>
+</div>
 
 <!-- Keyed on the target so a right-click retarget remounts and replays the animation. -->
-{#if actionTargetId && panelEntry}
+{#if actionTargetId && panelActions}
   {#key actionTargetId}
     <ActionsPanel
       open={actionsOpen}
-      actions={allActions(panelEntry.actions)}
+      actions={allActions(panelActions)}
       onRun={runFromPanel}
       onDismiss={closeActions}
     />

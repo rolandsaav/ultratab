@@ -6,8 +6,6 @@ import type { DownloadEntry } from './parsers';
 import type { DownloadsApi } from './api';
 import { MODULE } from './module';
 
-const SEARCH_LIMIT = 1000;
-
 // Completed downloads held between keystrokes. Emptied on palette-open (freshness).
 let cache: DownloadEntry[] | null = null;
 
@@ -16,7 +14,6 @@ async function fill(): Promise<DownloadEntry[]> {
     return cache;
   }
   const results = await browser.downloads.search({
-    limit: SEARCH_LIMIT,
     orderBy: ['-startTime'],
   });
   cache = results

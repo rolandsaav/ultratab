@@ -278,6 +278,11 @@ body {
   overflow-y: hidden;
 }
 
+.virtual-space {
+  position: relative;
+  width: 100%;
+}
+
 /* Thin, theme-matched scrollbars with a transparent track. .input-row is included so its
    reserved gutter matches the list's exactly, keeping the columns aligned. */
 .list,
@@ -327,6 +332,12 @@ body {
   text-align: left;
   cursor: pointer;
   transition: background 0.08s ease;
+}
+
+.virtual-item {
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .item:first-child {

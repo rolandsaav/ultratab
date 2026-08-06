@@ -1,9 +1,6 @@
 import { order } from '../../lib/fuzzy';
 import type { Item } from './parsers';
 
-/** Max results surfaced to the UI — single home for the cap. */
-export const RESULT_CAP = 50;
-
 /**
  * Host + path of a URL, dropping the scheme/query/hash noise every URL carries.
  * Hostname is kept on purpose — searching by domain ("github") is a primary use
@@ -31,18 +28,18 @@ function pinnedThenRecent(a: Item, b: Item): number {
 }
 
 /**
- * Order items for display and cap the count.
+ * Order items for display.
  * Empty query → pinned tabs first, then most recently accessed. Otherwise → engine relevance.
  */
 export function rank(items: Item[], query: string): Item[] {
   const trimmed = query.trim();
 
   if (!trimmed) {
-    return [...items].sort(pinnedThenRecent).slice(0, RESULT_CAP);
+    return [...items].sort(pinnedThenRecent);
   }
 
   // Normalize the query the same way as the haystack, so pasting a full URL
   // (scheme/query/hash and all) still matches the cleaned url text.
   const idxs = order(items.map(searchableText), cleanUrl(trimmed) || trimmed);
-  return idxs.slice(0, RESULT_CAP).map((i) => items[i]);
+  return idxs.map((i) => items[i]);
 }
