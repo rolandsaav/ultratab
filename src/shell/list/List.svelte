@@ -1,5 +1,5 @@
 <script lang="ts" generics="T, S = T">
-  import type { Snippet } from 'svelte';
+  import { onDestroy, type Snippet } from 'svelte';
   import { SvelteMap } from 'svelte/reactivity';
   import { get } from 'svelte/store';
   import { createVirtualizer } from '@tanstack/svelte-virtual';
@@ -67,9 +67,11 @@
   let listRef = $state<HTMLDivElement | null>(null);
   let measuredListRef = $state<HTMLDivElement | null>(null);
   let rowHeight = $state(1);
+  let isScrolling = $state(false);
   let actionsOpen = $state(false);
   // Kept after close so the panel retains its contents while it animates out.
   let actionTargetId = $state('');
+  let scrollFadeTimer: number | undefined;
 
   const virtualizer = createVirtualizer<HTMLDivElement, HTMLDivElement>({
     count: 0,
@@ -143,6 +145,7 @@
   function scrollToHighlighted(): void {
     if (items.length === 0) return;
     get(virtualizer).scrollToIndex(highlightedIndex, { align: 'auto' });
+    showScrollbar();
   }
 
   function measureCssLength(scope: HTMLElement, property: string): number {
@@ -303,14 +306,22 @@
     return 1;
   }
 
-  function listClass(): string {
-    if (actionsOpen) return 'list list--inert';
-    return 'list';
-  }
-
   function rowClass(item: T): string | undefined {
     return getRowClass?.(item);
   }
+
+  function showScrollbar(): void {
+    isScrolling = true;
+    if (scrollFadeTimer) window.clearTimeout(scrollFadeTimer);
+    scrollFadeTimer = window.setTimeout(() => {
+      isScrolling = false;
+      scrollFadeTimer = undefined;
+    }, 1000);
+  }
+
+  onDestroy(() => {
+    if (scrollFadeTimer) window.clearTimeout(scrollFadeTimer);
+  });
 </script>
 
 <div
@@ -348,7 +359,15 @@
     {#if header}{@render header()}{/if}
   </div>
 
-  <div bind:this={listRef} id="palette-list" role="listbox" class={listClass()}>
+  <div
+    bind:this={listRef}
+    id="palette-list"
+    role="listbox"
+    class="list"
+    class:list--inert={actionsOpen}
+    class:list--scrolling={isScrolling}
+    onscroll={showScrollbar}
+  >
     {#if items.length === 0}
       <div class="empty">No results found</div>
     {:else}
