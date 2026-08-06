@@ -21,10 +21,12 @@
   --st-hover: rgba(255, 255, 255, 0.1);
   /* Popup corner radius; also the footer's horizontal padding, so contents clear the corners. */
   --st-radius: 1em;
-  /* Sole accent — the active tab's row tint. */
+  /* Sole accent — blended into the highlighted row when it is also the active tab. */
   --st-accent: #89b4fa;
-  /* List scrollbar width; also the gutter the header reserves to keep toggles column-aligned. */
-  --st-scrollbar: 0.75em;
+  /* Scrollbar dimensions and colors. */
+  --st-scrollbar: 0.375em;
+  --st-scrollbar-thumb: rgba(255, 255, 255, 0.18);
+  --st-scrollbar-thumb-hover: rgba(255, 255, 255, 0.28);
   /* Icon-square size for all controls, the back button, and row favicons, so the columns
      line up; --st-edge-pad is their shared left/right inset. */
   --st-control-size: 1.75em;
@@ -271,9 +273,9 @@ body {
   max-height: calc(var(--st-rows) * var(--st-row-height));
   min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   overscroll-behavior: contain;
-  /* Reserve the gutter even when not scrolling, so the action columns stay put and aligned. */
-  scrollbar-gutter: stable;
+  scrollbar-gutter: stable both-edges;
 }
 
 /* Freeze the results while the actions panel is open. */
@@ -286,13 +288,20 @@ body {
   width: 100%;
 }
 
-/* Thin, theme-matched scrollbars with a transparent track. .input-row is included so its
-   reserved gutter matches the list's exactly, keeping the columns aligned. */
-.list,
+/* Thin, low-contrast scrollbars with a transparent track. */
+.list {
+  scrollbar-width: thin; /* Firefox + Chromium 121+ */
+  scrollbar-color: transparent transparent;
+}
+
+.list.list--scrolling {
+  scrollbar-color: var(--st-scrollbar-thumb) transparent;
+}
+
 .actions-list,
 .input-row {
   scrollbar-width: thin; /* Firefox + Chromium 121+ */
-  scrollbar-color: var(--st-border) transparent;
+  scrollbar-color: var(--st-scrollbar-thumb) transparent;
 }
 
 /* WebKit / older Chromium equivalent. */
@@ -304,19 +313,36 @@ body {
 .actions-list::-webkit-scrollbar-track {
   background: transparent;
 }
-.list::-webkit-scrollbar-thumb,
-.actions-list::-webkit-scrollbar-thumb {
-  /* padding-box + transparent border insets the thumb off the edge. */
-  background: var(--st-border);
-  background-clip: padding-box;
-  border: 0.25em solid transparent;
+.list::-webkit-scrollbar-thumb {
+  background: transparent;
   border-radius: 1em;
 }
-.list::-webkit-scrollbar-thumb:hover,
-.actions-list::-webkit-scrollbar-thumb:hover {
-  background: var(--st-text-muted);
+
+.actions-list::-webkit-scrollbar-thumb {
+  /* padding-box + transparent border insets the thumb off the edge. */
+  background: transparent;
   background-clip: padding-box;
-  border: 0.25em solid transparent;
+  border: 0.3em solid transparent;
+  border-radius: 1em;
+}
+
+.list.list--scrolling::-webkit-scrollbar-thumb {
+  background: var(--st-scrollbar-thumb);
+}
+
+.actions-list::-webkit-scrollbar-thumb {
+  background: var(--st-scrollbar-thumb);
+  background-clip: padding-box;
+}
+
+.list.list--scrolling::-webkit-scrollbar-thumb:hover {
+  background: var(--st-scrollbar-thumb-hover);
+}
+
+.actions-list::-webkit-scrollbar-thumb:hover {
+  background: var(--st-scrollbar-thumb-hover);
+  background-clip: padding-box;
+  border: 0.3em solid transparent;
 }
 
 /* Fixed row height so the list renders an exact --st-rows count. */
@@ -328,7 +354,7 @@ body {
   height: var(--st-row-height);
   padding: 0 var(--st-edge-pad);
   border: none;
-  border-top: var(--st-border-w) solid var(--st-border);
+  border-radius: 0.5em;
   background: none;
   color: inherit;
   font-family: inherit;
@@ -343,20 +369,11 @@ body {
   left: 0;
 }
 
-.item:first-child {
-  border-top: none;
-}
-
 /* Highlight keyed off data-selected (not :hover) so hover can't move it. */
 .item:focus-visible,
 .item[data-selected] {
   background: var(--st-border);
   outline: none;
-}
-
-/* The active tab (page behind the palette): a faint, always-on accent wash. */
-.item.current {
-  background: color-mix(in srgb, var(--st-accent) 14%, transparent);
 }
 
 /* Active tab + selected: blend the accent into the highlight so the cue survives. */
