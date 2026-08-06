@@ -6,6 +6,7 @@
     id: string;
     domId?: string;
     actions: RowActions<T>;
+    trailingLabel?: string;
     selected?: boolean;
     /** Extra class on the row element — a module's per-row modifier (e.g. `current`). */
     rowClass?: string;
@@ -20,6 +21,7 @@
     id,
     domId,
     actions,
+    trailingLabel,
     selected = false,
     rowClass,
     style,
@@ -49,34 +51,45 @@
     e.preventDefault();
     onOpenActions();
   }}
-  class={rowClass ? `item virtual-item ${rowClass}` : 'item virtual-item'}
+  class={[
+    'item virtual-item',
+    rowClass,
+    trailingLabel && 'item--with-trailing-label',
+  ]}
   {style}
 >
   {@render children()}
-  {#if actions.inline}
-    <div class="controls">
-      {#each actions.inline as action, i (action.command.id)}
-        {@const Icon = action.icon ?? action.command.icon}
-        <button
-          type="button"
-          class="control item-action"
-          class:persistent={action.persistent}
-          title={action.command.title}
-          aria-label={action.command.title}
-          onclick={(e) => {
-            e.stopPropagation();
-            onRunInline(i);
-          }}
-        >
-          {#if action.hoverIcon}
-            {@const HoverIcon = action.hoverIcon}
-            <Icon class="control-icon control-icon--rest" />
-            <HoverIcon class="control-icon control-icon--hover" />
-          {:else}
-            <Icon />
-          {/if}
-        </button>
-      {/each}
+  {#if trailingLabel || actions.inline}
+    <div class="row-trailing">
+      {#if trailingLabel}
+        <span class="trailing-label">{trailingLabel}</span>
+      {/if}
+      {#if actions.inline}
+        <div class="controls row-controls">
+          {#each actions.inline as action, i (action.command.id)}
+            {@const Icon = action.icon ?? action.command.icon}
+            <button
+              type="button"
+              class="control item-action"
+              class:persistent={action.persistent}
+              title={action.command.title}
+              aria-label={action.command.title}
+              onclick={(e) => {
+                e.stopPropagation();
+                onRunInline(i);
+              }}
+            >
+              {#if action.hoverIcon}
+                {@const HoverIcon = action.hoverIcon}
+                <Icon class="control-icon control-icon--rest" />
+                <HoverIcon class="control-icon control-icon--hover" />
+              {:else}
+                <Icon />
+              {/if}
+            </button>
+          {/each}
+        </div>
+      {/if}
     </div>
   {/if}
 </div>

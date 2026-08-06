@@ -30,6 +30,9 @@
   --st-control-size: 1.75em;
   --st-control-gap: 0.25em;
   --st-edge-pad: 0.75em;
+  --st-result-trailing-width: calc(
+    3 * var(--st-control-size) + 2 * var(--st-control-gap)
+  );
   /* Glyph size inside a control. */
   --st-control-icon: 1em;
 }
@@ -394,6 +397,36 @@ body {
   background: var(--st-text-muted);
 }
 
+.row-trailing {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  width: var(--st-result-trailing-width);
+  min-height: var(--st-control-size);
+}
+
+.row-controls {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.trailing-label {
+  min-width: 0;
+  max-width: 100%;
+  color: var(--st-text-muted);
+  font-size: 0.75em;
+  line-height: 1;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity 0.08s ease;
+}
+
 /* Row actions start hidden; slots stay reserved via opacity (not display) so nothing shifts. */
 .item-action {
   opacity: 0;
@@ -405,8 +438,27 @@ body {
   color: var(--st-text);
 }
 
-/* Active row reveals its buttons and swaps the control icon; gated on data-selected, no :hover. */
+.item--with-trailing-label .item-action.persistent {
+  opacity: 0;
+}
+
+/* Active row reveals its buttons and swaps the control icon. */
 .list:not(.list--inert) .item[data-selected] {
+  .item-action {
+    opacity: 1;
+  }
+  .control-icon--rest {
+    display: none;
+  }
+  .control-icon--hover {
+    display: block;
+  }
+}
+
+.list:not(.list--inert) .item--with-trailing-label:is([data-selected], :hover) {
+  .trailing-label {
+    opacity: 0;
+  }
   .item-action {
     opacity: 1;
   }

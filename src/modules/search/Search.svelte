@@ -6,15 +6,19 @@
   import { searchApi } from './api';
   import { rank } from './ranking';
   import { commandsForItem } from './commands';
-  import { searchPlaceholder, parseSourceCommand } from './sources';
+  import {
+    searchPlaceholder,
+    parseSourceCommand,
+    sourceRowLabel,
+  } from './sources';
   import { status, toMessage } from '../../shell/status.svelte';
   import { warm } from './warm.svelte';
   import type { Item, Kind, SourceToggles } from './parsers';
 
   const DEFAULT_TOGGLES: SourceToggles = {
     tab: true,
-    bookmark: false,
-    history: false,
+    bookmark: true,
+    history: true,
   };
 
   /* Seeded (copied, so in-place edits never write through) from the warm snapshot, so a
@@ -112,6 +116,7 @@
   {items}
   getId={(item) => item.id}
   getActions={commandsForItem}
+  getTrailingLabel={sourceRowLabel}
   getRowClass={(item) => (item.active ? 'current' : undefined)}
   bind:query
   {placeholder}
