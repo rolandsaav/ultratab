@@ -384,6 +384,7 @@ body {
 
 /* Leading icon square mirroring .back, so a row's favicon shares the back arrow's column. */
 .lead {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -398,6 +399,16 @@ body {
   flex-shrink: 0;
   border-radius: 0.125em;
   color: var(--st-text);
+}
+
+.fallback-icon {
+  color: var(--st-text-muted);
+}
+
+.favicon-img {
+  position: absolute;
+  background: var(--st-bg);
+  object-fit: contain;
 }
 
 .text {
