@@ -207,6 +207,7 @@ export function commandsForItem(item: Item): RowActions<Item> {
   }
   return {
     primary: openInNewTab,
+    inline: [{ command: openInThisTab }, { command: copyUrl }],
     secondary: [openInThisTab, copyUrl],
   };
 }

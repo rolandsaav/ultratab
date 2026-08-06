@@ -25,6 +25,7 @@
     getId: (item: T) => string;
     getActions: (item: T) => RowActions<S>;
     getSubject?: (item: T) => S;
+    getTrailingLabel?: (item: T) => string | undefined;
     getRowClass?: (item: T) => string | undefined;
     placeholder: string;
     isLoading?: boolean;
@@ -49,6 +50,7 @@
     getId,
     getActions,
     getSubject,
+    getTrailingLabel,
     getRowClass,
     placeholder,
     isLoading = false,
@@ -310,6 +312,10 @@
     return getRowClass?.(item);
   }
 
+  function trailingLabel(item: T): string | undefined {
+    return getTrailingLabel?.(item);
+  }
+  
   function showScrollbar(): void {
     isScrolling = true;
     if (scrollFadeTimer) window.clearTimeout(scrollFadeTimer);
@@ -379,10 +385,12 @@
           {@const item = items[virtualRow.index]}
           {@const id = getId(item)}
           {@const actions = getActions(item)}
+          {@const trailing = trailingLabel(item)}
           <ListItem
             {id}
             domId={`palette-option-${virtualRow.index}`}
             {actions}
+            trailingLabel={trailing}
             selected={virtualRow.index === highlightedIndex}
             rowClass={rowClass(item)}
             style={`transform: translateY(${virtualRow.start}px);`}

@@ -2,10 +2,11 @@ import type { Component } from 'svelte';
 import AppWindow from '@lucide/svelte/icons/app-window';
 import Bookmark from '@lucide/svelte/icons/bookmark';
 import History from '@lucide/svelte/icons/history';
-import type { Kind, SourceToggles } from './parsers';
+import type { Item, Kind, SourceToggles } from './parsers';
 
 interface SourceMeta {
   label: string;
+  rowLabel: string;
   icon: Component;
   /** The @-command that enables this source when it is the entire input. */
   command: string;
@@ -13,9 +14,19 @@ interface SourceMeta {
 
 /** Presentation metadata per source — the single home for icons, labels, and @-commands. */
 export const SOURCE_META: Record<Kind, SourceMeta> = {
-  tab: { label: 'Tabs', icon: AppWindow, command: '@t' },
-  bookmark: { label: 'Bookmarks', icon: Bookmark, command: '@b' },
-  history: { label: 'History', icon: History, command: '@h' },
+  tab: { label: 'Tabs', rowLabel: 'Tab', icon: AppWindow, command: '@t' },
+  bookmark: {
+    label: 'Bookmarks',
+    rowLabel: 'Bookmark',
+    icon: Bookmark,
+    command: '@b',
+  },
+  history: {
+    label: 'History',
+    rowLabel: 'History',
+    icon: History,
+    command: '@h',
+  },
 };
 
 /** Left-to-right display order of the source toggle icons — the declaration order
@@ -41,4 +52,10 @@ export function searchPlaceholder(enabled: SourceToggles): string {
     SOURCE_META[kind].label.toLowerCase(),
   );
   return `Search ${listFormat.format(names)}…`;
+}
+
+/** Compact trailing row label for the result's source. */
+export function sourceRowLabel(item: Item): string {
+  if (item.active) return 'Active Tab';
+  return SOURCE_META[item.kind].rowLabel;
 }
