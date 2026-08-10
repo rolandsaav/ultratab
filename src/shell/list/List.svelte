@@ -250,19 +250,8 @@
     e.stopPropagation();
   }
 
-  function stepHighlightOffCurrent(): void {
-    if (items.length <= 1) return;
-    setHighlightedIndex(nextIndexAfterRemoval());
-  }
-
-  function nextIndexAfterRemoval(): number {
-    if (highlightedIndex === items.length - 1) {
-      return highlightedIndex - 1;
-    }
-    return highlightedIndex + 1;
-  }
-
-  // Run a row's command; if it removes the highlighted row, step off it first.
+  // Run a row's command; removals keep the current index so the replacement row
+  // takes over the highlight, while the clamp effect handles deleting the tail row.
   function subjectFor(item: T): S {
     if (getSubject) return getSubject(item);
     return item as unknown as S;
@@ -270,11 +259,6 @@
 
   function runRow(command: PaletteCommand<S>, item: T): void {
     const id = getId(item);
-    const removing =
-      command.run.kind === 'perform' && command.run.after === 'remove';
-    if (removing && id === highlightedId) {
-      stepHighlightOffCurrent();
-    }
     void runCommand(command, subjectFor(item), {
       onRefresh,
       onRemove: () => onRemove?.(id),

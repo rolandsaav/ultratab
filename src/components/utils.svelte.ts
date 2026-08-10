@@ -1,4 +1,5 @@
 import type { Command, Shortcut } from '../commands/command';
+import { tick } from 'svelte';
 
 /** True on macOS, where the command modifier is ⌘ (metaKey) rather than Ctrl. */
 export const isMac =
@@ -54,14 +55,47 @@ export function tabNav(
   command?.updateSelectedByItem(e.shiftKey ? -1 : 1);
 }
 
-/** Focus the input on mount and whenever `shouldFocus()` becomes true. */
+/** Focus the input after mount, eligible state changes, and popup/window focus recovery. */
 export function autofocus(
   input: () => HTMLInputElement | null,
   shouldFocus: () => boolean = () => true,
 ): void {
+  let focusSeq = 0;
+  let retryTimer: ReturnType<typeof setTimeout> | undefined;
+
+  function focusInput(): void {
+    input()?.focus({ preventScroll: true });
+  }
+
+  function focusWhenReady(): void {
+    if (!shouldFocus() || !input()) return;
+    const seq = ++focusSeq;
+
+    void tick().then(() => {
+      if (seq !== focusSeq) return;
+      focusInput();
+      requestAnimationFrame(() => {
+        if (seq !== focusSeq) return;
+        focusInput();
+      });
+      retryTimer = setTimeout(() => {
+        if (seq !== focusSeq) return;
+        focusInput();
+      }, 0);
+    });
+  }
+
   $effect(() => {
-    if (shouldFocus() && input()) {
-      requestAnimationFrame(() => input()?.focus());
-    }
+    focusWhenReady();
+  });
+
+  $effect(() => {
+    window.addEventListener('focus', focusWhenReady);
+    document.addEventListener('visibilitychange', focusWhenReady);
+    return () => {
+      window.removeEventListener('focus', focusWhenReady);
+      document.removeEventListener('visibilitychange', focusWhenReady);
+      if (retryTimer) clearTimeout(retryTimer);
+    };
   });
 }
