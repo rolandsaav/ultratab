@@ -1,5 +1,5 @@
 <script lang="ts" generics="T, S = T">
-  import { onMount, type Snippet } from 'svelte';
+  import { onMount, tick, type Snippet } from 'svelte';
   import { SvelteMap } from 'svelte/reactivity';
   import { get } from 'svelte/store';
   import { createVirtualizer } from '@tanstack/svelte-virtual';
@@ -122,12 +122,14 @@
   });
 
   $effect(() => {
-    get(virtualizer).setOptions({
+    const instance = get(virtualizer);
+    instance.setOptions({
       count: items.length,
       getScrollElement: () => scrollRef ?? listRef,
       estimateSize: () => rowHeight,
       overscan: OVERSCAN,
     });
+    instance.measure();
   });
 
   $effect(() => {
@@ -135,7 +137,12 @@
       highlightedIndex = 0;
       return;
     }
-    if (highlightedIndex >= items.length) highlightedIndex = items.length - 1;
+    if (highlightedIndex >= items.length) {
+      highlightedIndex = items.length - 1;
+      void tick().then(() =>
+        get(virtualizer).scrollToIndex(highlightedIndex, { align: 'auto' }),
+      );
+    }
   });
 
   // Sync the shell footer for this view. Every view uses List, so mounting one
@@ -211,6 +218,11 @@
     scrollToHighlighted();
   }
 
+  export function resetToTop(): void {
+    highlightedIndex = 0;
+    get(virtualizer).scrollToIndex(0);
+  }
+
   function openActions(id: string): void {
     const index = indexById.get(id);
     const item = itemAt(index);
@@ -278,8 +290,7 @@
 
   function onInput(value: string): void {
     query = value;
-    highlightedIndex = 0;
-    get(virtualizer).scrollToIndex(0);
+    resetToTop();
     onSearchChange?.(value);
   }
 
@@ -388,29 +399,31 @@
       >
         {#each $virtualizer.getVirtualItems() as virtualRow (virtualRow.key)}
           {@const item = items[virtualRow.index]}
-          {@const id = getId(item)}
-          {@const actions = getActions(item)}
-          {@const trailing = trailingLabel(item)}
-          <ListItem
-            {id}
-            domId={`palette-option-${virtualRow.index}`}
-            {actions}
-            trailingLabel={trailing}
-            selected={virtualRow.index === highlightedIndex}
-            rowClass={rowClass(item)}
-            style={`transform: translateY(${virtualRow.start}px);`}
-            onSelect={() => runRow(actions.primary, item)}
-            onHighlight={() => {
-              highlightedIndex = virtualRow.index;
-            }}
-            onOpenActions={() => openActions(id)}
-            onRunInline={(index) => {
-              const command = actions.inline?.[index]?.command;
-              if (command) runRow(command, item);
-            }}
-          >
-            {@render row(item)}
-          </ListItem>
+          {#if item !== undefined}
+            {@const id = getId(item)}
+            {@const actions = getActions(item)}
+            {@const trailing = trailingLabel(item)}
+            <ListItem
+              {id}
+              domId={`palette-option-${virtualRow.index}`}
+              {actions}
+              trailingLabel={trailing}
+              selected={virtualRow.index === highlightedIndex}
+              rowClass={rowClass(item)}
+              style={`transform: translateY(${virtualRow.start}px);`}
+              onSelect={() => runRow(actions.primary, item)}
+              onHighlight={() => {
+                highlightedIndex = virtualRow.index;
+              }}
+              onOpenActions={() => openActions(id)}
+              onRunInline={(index) => {
+                const command = actions.inline?.[index]?.command;
+                if (command) runRow(command, item);
+              }}
+            >
+              {@render row(item)}
+            </ListItem>
+          {/if}
         {/each}
       </div>
     {/if}
