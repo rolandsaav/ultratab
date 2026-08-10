@@ -12,7 +12,9 @@ const QUERY_SOURCE_PENALTY: Record<Kind, number> = {
   bookmark: 8,
   history: 12,
 };
-// Recency is a nudge among comparable fuzzy matches, not a source/category override.
+/*
+ * Recency is a nudge among comparable fuzzy matches, not a source/category override.
+ */
 const RECENCY_WEIGHT = 0.25;
 
 /**
@@ -80,16 +82,20 @@ function emptyQueryOrder(a: Item, b: Item): number {
 function queryOrder(a: QueryRank, b: QueryRank): number {
   if (a.tier !== b.tier) return a.tier - b.tier;
 
-  // Among many matching open tabs for the same site, the recently-used tab is
-  // usually the one the user meant to switch back to.
+  /*
+   * Among many matching open tabs for the same site, the recently-used tab is
+   * usually the one the user meant to switch back to.
+   */
   if (a.tier === QueryTier.DirectTab) {
     const recentDelta = b.item.lastAccessed - a.item.lastAccessed;
     if (recentDelta !== 0) return recentDelta;
     return a.relevance - b.relevance;
   }
 
-  // uFuzzy's order is still the main signal. Source and recency only bias
-  // results that are close enough to live in the same tier.
+  /*
+   * uFuzzy's order is still the main signal. Source and recency only bias
+   * results that are close enough to live in the same tier.
+   */
   const scoreA =
     a.relevance +
     QUERY_SOURCE_PENALTY[a.item.kind] +
@@ -115,15 +121,19 @@ export function rank(items: Item[], query: string): Item[] {
     return [...items].sort(emptyQueryOrder);
   }
 
-  // Normalize the query the same way as the haystack, so pasting a full URL
-  // (scheme/query/hash and all) still matches the cleaned url text.
+  /*
+   * Normalize the query the same way as the haystack, so pasting a full URL
+   * (scheme/query/hash and all) still matches the cleaned url text.
+   */
   const needle = cleanUrl(trimmed) || trimmed;
   const haystack = items.map(searchableText);
   const fuzzyIdxs = order(haystack, needle);
 
-  // uFuzzy can rank fuzzy candidates well, but literal substring matches are a
-  // product guarantee for tab switching. Merge them in before sorting so a real
-  // title/URL hit cannot be dropped by fuzzy filtering.
+  /*
+   * uFuzzy can rank fuzzy candidates well, but literal substring matches are a
+   * product guarantee for tab switching. Merge them in before sorting so a real
+   * title/URL hit cannot be dropped by fuzzy filtering.
+   */
   const directIdxs = items
     .map((item, i) => (isDirectMatch(item, needle) ? i : -1))
     .filter((i) => i >= 0);
