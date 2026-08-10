@@ -12,8 +12,14 @@ const QUERY_SOURCE_PENALTY: Record<Kind, number> = {
   bookmark: 8,
   history: 12,
 };
+// Recency is a nudge among comparable fuzzy matches, not a source/category override.
 const RECENCY_WEIGHT = 0.25;
 
+/**
+ * Typed search is tiered before scoring so direct "I can see the word I typed"
+ * matches remain predictable. In particular, open tabs with literal title/URL
+ * matches should beat saved items and weaker fuzzy tab matches.
+ */
 const enum QueryTier {
   DirectTab = 0,
   DirectSaved = 1,
@@ -74,12 +80,16 @@ function emptyQueryOrder(a: Item, b: Item): number {
 function queryOrder(a: QueryRank, b: QueryRank): number {
   if (a.tier !== b.tier) return a.tier - b.tier;
 
+  // Among many matching open tabs for the same site, the recently-used tab is
+  // usually the one the user meant to switch back to.
   if (a.tier === QueryTier.DirectTab) {
     const recentDelta = b.item.lastAccessed - a.item.lastAccessed;
     if (recentDelta !== 0) return recentDelta;
     return a.relevance - b.relevance;
   }
 
+  // uFuzzy's order is still the main signal. Source and recency only bias
+  // results that are close enough to live in the same tier.
   const scoreA =
     a.relevance +
     QUERY_SOURCE_PENALTY[a.item.kind] +
@@ -110,10 +120,15 @@ export function rank(items: Item[], query: string): Item[] {
   const needle = cleanUrl(trimmed) || trimmed;
   const haystack = items.map(searchableText);
   const fuzzyIdxs = order(haystack, needle);
+
+  // uFuzzy can rank fuzzy candidates well, but literal substring matches are a
+  // product guarantee for tab switching. Merge them in before sorting so a real
+  // title/URL hit cannot be dropped by fuzzy filtering.
   const directIdxs = items
     .map((item, i) => (isDirectMatch(item, needle) ? i : -1))
     .filter((i) => i >= 0);
   const idxs = [...new Set([...directIdxs, ...fuzzyIdxs])];
+
   const fuzzyRanks = new Map(fuzzyIdxs.map((idx, rank) => [idx, rank]));
   const recencyRanks = new Map(
     [...idxs]
