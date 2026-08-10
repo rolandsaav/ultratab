@@ -287,38 +287,9 @@ body {
   width: 100%;
 }
 
-.actions-list,
 .input-row {
   scrollbar-width: thin; /* Firefox + Chromium 121+ */
   scrollbar-color: var(--st-scrollbar-thumb) transparent;
-}
-
-/* WebKit / older Chromium equivalent. */
-.actions-list::-webkit-scrollbar {
-  width: var(--st-scrollbar);
-}
-
-.actions-list::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.actions-list::-webkit-scrollbar-thumb {
-  /* padding-box + transparent border insets the thumb off the edge. */
-  background: transparent;
-  background-clip: padding-box;
-  border: 0.3em solid transparent;
-  border-radius: 1em;
-}
-
-.actions-list::-webkit-scrollbar-thumb {
-  background: var(--st-scrollbar-thumb);
-  background-clip: padding-box;
-}
-
-.actions-list::-webkit-scrollbar-thumb:hover {
-  background: var(--st-scrollbar-thumb-hover);
-  background-clip: padding-box;
-  border: 0.3em solid transparent;
 }
 
 .os-scrollbar.os-scrollbar-vertical {
