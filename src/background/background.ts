@@ -1,5 +1,13 @@
 import browser from 'webextension-polyfill';
 import { markVisited, forget, seed } from './visited';
+import {
+  syncActivatedTabSuccession,
+  syncAllTabSuccession,
+  syncAttachedTabSuccession,
+  syncCreatedTabSuccession,
+  syncDetachedTabSuccession,
+  syncReplacedTabSuccession,
+} from './succession';
 import { TOGGLE_PALETTE, sendPaletteCommand } from '../bridge/commands';
 import '../modules/search/background';
 import '../modules/downloads/background';
@@ -65,22 +73,39 @@ async function toggleForTab(tab: browser.Tabs.Tab): Promise<void> {
   }
 }
 
-// Seed the visited set once per session so pre-existing tabs don't flag as
-// unvisited. Both fire once at session/extension start (not on SW wake).
-browser.runtime.onStartup.addListener(() => track('seed', seed()));
-browser.runtime.onInstalled.addListener(() => track('seed', seed()));
+// Seed the visited set so pre-existing tabs don't flag as unvisited, and
+// rebuild browser-native tab close succession from current tab metadata.
+browser.runtime.onStartup.addListener(() =>
+  track('startup', Promise.all([seed(), syncAllTabSuccession()])),
+);
+browser.runtime.onInstalled.addListener(() =>
+  track('installed', Promise.all([seed(), syncAllTabSuccession()])),
+);
 
-// Keep the visited set in step with real activity.
-browser.tabs.onActivated.addListener(({ tabId }) =>
+// Keep tab activity state and close succession in step with real activity.
+browser.tabs.onActivated.addListener(({ tabId, windowId }) =>
   track(
     'tab-activated',
     Promise.all([
       markVisited(tabId),
+      syncActivatedTabSuccession(tabId, windowId),
       browser.tabs.get(tabId).then(setActionPopupForTab),
     ]),
   ),
 );
+browser.tabs.onCreated.addListener((tab) =>
+  track('tab-created', syncCreatedTabSuccession(tab)),
+);
+browser.tabs.onDetached.addListener((_tabId, { oldWindowId }) =>
+  track('tab-detached', syncDetachedTabSuccession(oldWindowId)),
+);
+browser.tabs.onAttached.addListener((tabId, { newWindowId }) =>
+  track('tab-attached', syncAttachedTabSuccession(tabId, newWindowId)),
+);
 browser.tabs.onRemoved.addListener((tabId) => track('forget', forget(tabId)));
+browser.tabs.onReplaced.addListener((addedTabId) =>
+  track('tab-replaced', syncReplacedTabSuccession(addedTabId)),
+);
 browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.url || changeInfo.status === 'complete') {
     track('sync-action-popup', setActionPopupForTab({ ...tab, id: tabId }));
@@ -92,4 +117,6 @@ browser.action.onClicked.addListener((tab) => {
   track('toggle-palette', toggleForTab(tab));
 });
 
+// Also run on service-worker wake / extension reload.
 track('sync-action-popup', syncActiveTabPopup());
+track('sync-succession', syncAllTabSuccession());
