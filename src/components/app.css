@@ -294,17 +294,12 @@ body {
 }
 
 /* WebKit / older Chromium equivalent. */
-.list::-webkit-scrollbar,
 .actions-list::-webkit-scrollbar {
   width: var(--st-scrollbar);
 }
-.list::-webkit-scrollbar-track,
+
 .actions-list::-webkit-scrollbar-track {
   background: transparent;
-}
-.list::-webkit-scrollbar-thumb {
-  background: transparent;
-  border-radius: 1em;
 }
 
 .actions-list::-webkit-scrollbar-thumb {
@@ -315,17 +310,9 @@ body {
   border-radius: 1em;
 }
 
-.list.list--scrolling::-webkit-scrollbar-thumb {
-  background: var(--st-scrollbar-thumb);
-}
-
 .actions-list::-webkit-scrollbar-thumb {
   background: var(--st-scrollbar-thumb);
   background-clip: padding-box;
-}
-
-.list.list--scrolling::-webkit-scrollbar-thumb:hover {
-  background: var(--st-scrollbar-thumb-hover);
 }
 
 .actions-list::-webkit-scrollbar-thumb:hover {
