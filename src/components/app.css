@@ -248,7 +248,7 @@ body {
   height: var(--st-control-icon);
 }
 
-/* Hidden by default; the active row swaps it in. */
+/* Hidden by default; an action swaps it in while hovered/focused. */
 .control-icon--hover {
   display: none;
 }
@@ -344,6 +344,10 @@ body {
 }
 
 /* Active tab + selected: blend the accent into the highlight so the cue survives. */
+.item.current {
+  background: color-mix(in srgb, var(--st-accent) 10%, transparent);
+}
+
 .item.current:focus-visible,
 .item.current[data-selected] {
   background: color-mix(in srgb, var(--st-accent) 22%, var(--st-border));
@@ -442,16 +446,10 @@ body {
   opacity: 0;
 }
 
-/* Active row reveals its buttons and swaps the control icon. */
+/* Active row reveals its buttons; individual controls preview their flip on hover/focus. */
 .list:not(.list--inert) .item[data-selected] {
   .item-action {
     opacity: 1;
-  }
-  .control-icon--rest {
-    display: none;
-  }
-  .control-icon--hover {
-    display: block;
   }
 }
 
@@ -462,6 +460,9 @@ body {
   .item-action {
     opacity: 1;
   }
+}
+
+.item-action:is(:hover, :focus-visible) {
   .control-icon--rest {
     display: none;
   }
