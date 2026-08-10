@@ -258,7 +258,9 @@ body {
   color: var(--st-text);
 }
 
+.source:hover,
 .source:focus-visible {
+  color: var(--st-text);
   outline: none;
   background: var(--st-hover);
 }
