@@ -61,6 +61,10 @@ function isDirectMatch(item: Item, query: string): boolean {
   return searchableText(item).toLowerCase().includes(needle);
 }
 
+/*
+ * A direct match means the normalized query appears literally in the title or
+ * cleaned URL. Non-direct items can still be valid results when uFuzzy matches them.
+ */
 function queryTier(item: Item, direct: boolean): QueryTier {
   if (item.kind === 'tab') {
     return direct ? QueryTier.DirectTab : QueryTier.FuzzyTab;
