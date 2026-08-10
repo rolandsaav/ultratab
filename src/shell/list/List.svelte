@@ -1,8 +1,10 @@
 <script lang="ts" generics="T, S = T">
-  import { onDestroy, type Snippet } from 'svelte';
+  import { onMount, type Snippet } from 'svelte';
   import { SvelteMap } from 'svelte/reactivity';
   import { get } from 'svelte/store';
   import { createVirtualizer } from '@tanstack/svelte-virtual';
+  import type { OverlayScrollbars } from 'overlayscrollbars';
+  import { useOverlayScrollbars } from 'overlayscrollbars-svelte';
   import ArrowLeft from '@lucide/svelte/icons/arrow-left';
   import type { Command as PaletteCommand } from '../../commands/command';
   import { nav } from '../nav.svelte';
@@ -67,17 +69,16 @@
   let highlightedIndex = $state(0);
   let inputRef = $state<HTMLInputElement | null>(null);
   let listRef = $state<HTMLDivElement | null>(null);
+  let scrollRef = $state<HTMLElement | null>(null);
   let measuredListRef = $state<HTMLDivElement | null>(null);
   let rowHeight = $state(1);
-  let isScrolling = $state(false);
   let actionsOpen = $state(false);
   // Kept after close so the panel retains its contents while it animates out.
   let actionTargetId = $state('');
-  let scrollFadeTimer: number | undefined;
 
-  const virtualizer = createVirtualizer<HTMLDivElement, HTMLDivElement>({
+  const virtualizer = createVirtualizer<HTMLElement, HTMLDivElement>({
     count: 0,
-    getScrollElement: () => listRef,
+    getScrollElement: () => scrollRef ?? listRef,
     estimateSize: () => rowHeight,
     overscan: OVERSCAN,
   });
@@ -94,6 +95,18 @@
   const panelItem = $derived(itemAt(actionTargetIndex));
   const panelActions = $derived(actionsForItem(panelItem));
   const activeDescendant = $derived(activeDescendantId());
+  const overlayScrollbarOptions = {
+    scrollbars: {
+      autoHide: 'scroll',
+    },
+  } as const;
+  const [initializeOverlayScrollbars] = useOverlayScrollbars({
+    options: () => overlayScrollbarOptions,
+    events: () => ({
+      initialized: onOverlayScrollbarsInitialized,
+    }),
+    defer: () => true,
+  });
 
   // Refocus the main input when the actions panel is closed.
   autofocus(
@@ -111,7 +124,7 @@
   $effect(() => {
     get(virtualizer).setOptions({
       count: items.length,
-      getScrollElement: () => listRef,
+      getScrollElement: () => scrollRef ?? listRef,
       estimateSize: () => rowHeight,
       overscan: OVERSCAN,
     });
@@ -144,10 +157,17 @@
     return () => nav.setEscapeInterceptor(null);
   });
 
+  onMount(() => {
+    if (listRef) initializeOverlayScrollbars({ target: listRef });
+  });
+
+  function onOverlayScrollbarsInitialized(instance: OverlayScrollbars): void {
+    scrollRef = instance.elements().viewport;
+  }
+
   function scrollToHighlighted(): void {
     if (items.length === 0) return;
     get(virtualizer).scrollToIndex(highlightedIndex, { align: 'auto' });
-    showScrollbar();
   }
 
   function measureCssLength(scope: HTMLElement, property: string): number {
@@ -315,19 +335,6 @@
   function trailingLabel(item: T): string | undefined {
     return getTrailingLabel?.(item);
   }
-  
-  function showScrollbar(): void {
-    isScrolling = true;
-    if (scrollFadeTimer) window.clearTimeout(scrollFadeTimer);
-    scrollFadeTimer = window.setTimeout(() => {
-      isScrolling = false;
-      scrollFadeTimer = undefined;
-    }, 1000);
-  }
-
-  onDestroy(() => {
-    if (scrollFadeTimer) window.clearTimeout(scrollFadeTimer);
-  });
 </script>
 
 <div
@@ -371,8 +378,6 @@
     role="listbox"
     class="list"
     class:list--inert={actionsOpen}
-    class:list--scrolling={isScrolling}
-    onscroll={showScrollbar}
   >
     {#if items.length === 0}
       <div class="empty">No results found</div>

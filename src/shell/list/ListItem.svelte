@@ -31,6 +31,10 @@
     onRunInline,
     children,
   }: Props = $props();
+
+  const hasPersistentAction = $derived(
+    actions.inline?.some((action) => action.persistent) ?? false,
+  );
 </script>
 
 <div
@@ -55,6 +59,7 @@
     'item virtual-item',
     rowClass,
     trailingLabel && 'item--with-trailing-label',
+    hasPersistentAction && 'item--with-persistent-action',
   ]}
   {style}
 >

@@ -3,6 +3,7 @@ import Shell from '../shell/Shell.svelte';
 import { nav } from '../shell/nav.svelte';
 import { searchCommand } from '../modules/search/commands';
 import { asFrameMessage, postFrameMessage } from '../bridge/frame';
+import 'overlayscrollbars/overlayscrollbars.css';
 import '../components/app.css';
 
 // Palette iframe entry: mounts the app and bridges the frame protocol to the embedder.

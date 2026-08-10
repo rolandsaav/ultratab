@@ -1,5 +1,7 @@
 <script lang="ts" generics="T">
+  import { onMount } from 'svelte';
   import { Command, Popover } from 'bits-ui';
+  import { useOverlayScrollbars } from 'overlayscrollbars-svelte';
   import type { Command as PaletteCommand } from '../commands/command';
   import { autofocus, matchAction, tabNav } from './utils.svelte';
   import KeyCombo from './KeyCombo.svelte';
@@ -15,7 +17,16 @@
 
   let query = $state('');
   let inputRef = $state<HTMLInputElement | null>(null);
+  let listRef = $state<HTMLElement | null>(null);
   let commandRoot = $state<ReturnType<typeof Command.Root> | null>(null);
+  const [initializeOverlayScrollbars] = useOverlayScrollbars({
+    options: () => ({
+      scrollbars: {
+        autoHide: 'scroll',
+      },
+    }),
+    defer: () => true,
+  });
 
   autofocus(
     () => inputRef,
@@ -35,6 +46,10 @@
     }
     tabNav(e, commandRoot);
   }
+
+  onMount(() => {
+    if (listRef) initializeOverlayScrollbars({ target: listRef });
+  });
 </script>
 
 <Popover.Root {open} onOpenChange={(v) => !v && onDismiss()}>
@@ -50,7 +65,7 @@
       onkeydown={onKeydown}
       class="actions"
     >
-      <Command.List class="actions-list">
+      <Command.List bind:ref={listRef} class="actions-list">
         <Command.Empty class="empty">No actions</Command.Empty>
         {#each actions as action (action.id)}
           {@const Icon = action.icon}

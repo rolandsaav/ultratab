@@ -24,9 +24,9 @@
   /* Sole accent — blended into the highlighted row when it is also the active tab. */
   --st-accent: #89b4fa;
   /* Scrollbar dimensions and colors. */
-  --st-scrollbar: 0.375em;
-  --st-scrollbar-thumb: rgba(255, 255, 255, 0.18);
-  --st-scrollbar-thumb-hover: rgba(255, 255, 255, 0.28);
+  --st-scrollbar: 0.625em;
+  --st-scrollbar-thumb: rgba(255, 255, 255, 0.32);
+  --st-scrollbar-thumb-hover: rgba(255, 255, 255, 0.44);
   /* Icon-square size for all controls, the back button, and row favicons, so the columns
      line up; --st-edge-pad is their shared left/right inset. */
   --st-control-size: 1.75em;
@@ -157,8 +157,7 @@ body {
   color: var(--st-text-muted);
 }
 
-/* Search input + source toggles sharing one bottom border. Reserves the same scrollbar gutter
-   and right inset as the list, keeping the toggles column-aligned with the row actions. */
+/* Search input + source toggles sharing one bottom border. */
 .input-row {
   display: flex;
   align-items: center;
@@ -166,7 +165,6 @@ body {
   flex-shrink: 0;
   padding-right: var(--st-edge-pad);
   overflow-y: auto;
-  scrollbar-gutter: stable;
 }
 
 .input-row::-webkit-scrollbar {
@@ -260,7 +258,9 @@ body {
   color: var(--st-text);
 }
 
+.source:hover,
 .source:focus-visible {
+  color: var(--st-text);
   outline: none;
   background: var(--st-hover);
 }
@@ -275,7 +275,6 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior: contain;
-  scrollbar-gutter: stable both-edges;
 }
 
 /* Freeze the results while the actions panel is open. */
@@ -288,61 +287,29 @@ body {
   width: 100%;
 }
 
-/* Thin, low-contrast scrollbars with a transparent track. */
-.list {
-  scrollbar-width: thin; /* Firefox + Chromium 121+ */
-  scrollbar-color: transparent transparent;
-}
-
-.list.list--scrolling {
-  scrollbar-color: var(--st-scrollbar-thumb) transparent;
-}
-
-.actions-list,
 .input-row {
   scrollbar-width: thin; /* Firefox + Chromium 121+ */
   scrollbar-color: var(--st-scrollbar-thumb) transparent;
 }
 
-/* WebKit / older Chromium equivalent. */
-.list::-webkit-scrollbar,
-.actions-list::-webkit-scrollbar {
+.os-scrollbar.os-scrollbar-vertical {
   width: var(--st-scrollbar);
-}
-.list::-webkit-scrollbar-track,
-.actions-list::-webkit-scrollbar-track {
-  background: transparent;
-}
-.list::-webkit-scrollbar-thumb {
-  background: transparent;
-  border-radius: 1em;
+  padding: 0.25em 0.125em;
+  cursor: default;
 }
 
-.actions-list::-webkit-scrollbar-thumb {
-  /* padding-box + transparent border insets the thumb off the edge. */
-  background: transparent;
-  background-clip: padding-box;
-  border: 0.3em solid transparent;
-  border-radius: 1em;
-}
-
-.list.list--scrolling::-webkit-scrollbar-thumb {
+.os-scrollbar .os-scrollbar-handle {
   background: var(--st-scrollbar-thumb);
+  border-radius: 1em;
+  cursor: grab;
 }
 
-.actions-list::-webkit-scrollbar-thumb {
-  background: var(--st-scrollbar-thumb);
-  background-clip: padding-box;
-}
-
-.list.list--scrolling::-webkit-scrollbar-thumb:hover {
+.os-scrollbar .os-scrollbar-handle:hover {
   background: var(--st-scrollbar-thumb-hover);
 }
 
-.actions-list::-webkit-scrollbar-thumb:hover {
-  background: var(--st-scrollbar-thumb-hover);
-  background-clip: padding-box;
-  border: 0.3em solid transparent;
+.os-scrollbar .os-scrollbar-handle:active {
+  cursor: grabbing;
 }
 
 /* Fixed row height so the list renders an exact --st-rows count. */
@@ -466,7 +433,12 @@ body {
   color: var(--st-text);
 }
 
-.item--with-trailing-label .item-action.persistent {
+.item--with-trailing-label:not(.item--with-persistent-action)
+  .item-action.persistent {
+  opacity: 0;
+}
+
+.item--with-persistent-action .trailing-label {
   opacity: 0;
 }
 
