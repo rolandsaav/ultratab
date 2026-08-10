@@ -47,6 +47,8 @@
     "@lucide/svelte": "^1.16.0",
     "@tanstack/svelte-virtual": "^3.13.35",
     "bits-ui": "^2.18.1",
+    "overlayscrollbars": "^2.16.0",
+    "overlayscrollbars-svelte": "^0.5.5",
     "webextension-polyfill": "^0.12.0"
   }
 }
