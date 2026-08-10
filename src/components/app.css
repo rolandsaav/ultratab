@@ -475,7 +475,12 @@ body {
   color: var(--st-text);
 }
 
-.item--with-trailing-label .item-action.persistent {
+.item--with-trailing-label:not(.item--with-persistent-action)
+  .item-action.persistent {
+  opacity: 0;
+}
+
+.item--with-persistent-action .trailing-label {
   opacity: 0;
 }
 
