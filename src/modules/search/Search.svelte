@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import List from '../../shell/list/List.svelte';
   import SourceIcons from './SourceIcons.svelte';
   import ItemRow from './ItemRow.svelte';
@@ -24,9 +24,9 @@
   /* Seeded (copied, so in-place edits never write through) from the warm snapshot, so a
    * reopen shows the last results right away, not an empty list that grows on first query. */
   let items = $state<Item[]>([...warm.items]);
-  let enabled = $state<SourceToggles>({ ...DEFAULT_TOGGLES });
+  let enabled = $state.raw<SourceToggles>({ ...DEFAULT_TOGGLES });
   let query = $state('');
-  let lastQuery = $state('');
+  let list = $state<List<Item> | null>(null);
   let reqSeq = 0;
 
   const placeholder = $derived(searchPlaceholder(enabled));
@@ -41,16 +41,17 @@
     (Object.keys(DEFAULT_TOGGLES) as Kind[]).every(
       (kind) => toggles[kind] === DEFAULT_TOGGLES[kind],
     );
-
   // Refresh the background cache on entry, then show the initial (empty-query) results.
   onMount(refresh);
 
-  async function runQuery(next: string): Promise<void> {
-    lastQuery = next;
+  async function runQuery(
+    next: string,
+    toggles = enabled,
+    resetSelection = false,
+  ): Promise<void> {
     status.error = '';
     const id = ++reqSeq;
     try {
-      const toggles = $state.snapshot(enabled) as SourceToggles;
       const { reqId, items: results } = await searchApi.query(
         next,
         toggles,
@@ -58,6 +59,10 @@
       );
       if (reqId !== reqSeq) return; // superseded by a newer query
       items = results;
+      if (resetSelection) {
+        await tick();
+        list?.resetToTop();
+      }
       if (isDefaultView(next, toggles)) warm.items = results;
     } catch (e) {
       if (id === reqSeq) status.error = toMessage(e, 'Search failed');
@@ -73,7 +78,7 @@
 
   // Invalidate then re-query — on entry and after an action that keeps the row (e.g. mute).
   function refresh(): void {
-    void invalidate().then(() => runQuery(lastQuery));
+    void invalidate().then(() => runQuery(query));
   }
 
   // Drop a closed row in place instead of re-querying, keeping order/scroll/highlight;
@@ -85,18 +90,20 @@
 
   // Re-rank after an optimistic pin/mute so the row moves without a refetch.
   function update(): void {
-    items = rank([...items], lastQuery);
+    items = rank([...items], query);
     void invalidate();
   }
 
   // A lone @-command enables its source and clears the input, then re-queries the
   // now-empty input (not the stale @-text) so recent results show.
   function onInput(value: string): void {
+    query = value;
     const kind = parseSourceCommand(value);
     if (kind) {
-      if (!enabled[kind]) enabled = { ...enabled, [kind]: true };
+      const next = enabled[kind] ? enabled : { ...enabled, [kind]: true };
+      enabled = next;
       query = '';
-      void runQuery('');
+      void runQuery('', next, true);
       return;
     }
     void runQuery(value);
@@ -107,12 +114,14 @@
   function toggle(kind: Kind): void {
     const onCount = Object.values(enabled).filter(Boolean).length;
     if (enabled[kind] && onCount === 1) return;
-    enabled = { ...enabled, [kind]: !enabled[kind] };
-    void runQuery(lastQuery);
+    const next = { ...enabled, [kind]: !enabled[kind] };
+    enabled = next;
+    void runQuery(query, next, true);
   }
 </script>
 
 <List
+  bind:this={list}
   {items}
   getId={(item) => item.id}
   getActions={commandsForItem}

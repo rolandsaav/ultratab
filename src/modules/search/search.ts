@@ -9,8 +9,9 @@ export function search(
   enabled: SourceToggles,
   query: string,
 ): Item[] {
-  const items = (Object.keys(enabled) as Kind[])
-    .filter((kind) => enabled[kind])
-    .flatMap((kind) => pool[kind] ?? []);
+  const kinds = (Object.keys(enabled) as Kind[]).filter(
+    (kind) => enabled[kind],
+  );
+  const items = kinds.flatMap((kind) => pool[kind] ?? []);
   return rank(items, query);
 }
