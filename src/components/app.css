@@ -97,6 +97,7 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  user-select: none;
 }
 
 :root[data-ultratab-surface='popup'] .overlay {
@@ -163,6 +164,7 @@ body {
   outline: none;
   font-family: inherit;
   flex-shrink: 0;
+  user-select: text;
 }
 
 .input::placeholder {
@@ -691,6 +693,7 @@ body {
   border-top: var(--st-border-w) solid var(--st-border);
   outline: none;
   font-family: inherit;
+  user-select: text;
 }
 
 .actions-input::placeholder {
