@@ -20,4 +20,8 @@ export interface SearchApi {
   openUrlInCurrentTab(url: string): Promise<void>;
 }
 
+/*
+ * This proxy sends Search API calls to `background.ts`.
+ * The background side can use privileged browser APIs.
+ */
 export const searchApi = defineProxy<SearchApi>(MODULE);

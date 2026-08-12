@@ -3,6 +3,7 @@ import Shell from '../shell/Shell.svelte';
 import { nav } from '../shell/nav.svelte';
 import { searchCommand } from '../modules/search/commands';
 import { asFrameMessage, postFrameMessage } from '../bridge/frame';
+import { connectBackgroundEvents } from './background-events';
 import 'overlayscrollbars/overlayscrollbars.css';
 import '../components/app.css';
 
@@ -35,6 +36,8 @@ window.addEventListener('message', (event) => {
   if (nav.visible) nav.close();
   else nav.open(searchCommand);
 });
+
+connectBackgroundEvents();
 
 // Announce we're listening so the embedder can flush a toggle that beat us here.
 if (embedded) postFrameMessage(window.parent, 'ready', '*');
