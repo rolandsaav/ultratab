@@ -527,8 +527,7 @@ body {
   align-items: center;
   justify-content: flex-end;
   gap: 0.45em;
-  /* Horizontal padding equals the corner radius so contents clear the rounded corners. */
-  padding: 0.375em var(--st-radius);
+  padding: 0.375em var(--st-edge-pad) 0.375em var(--st-radius);
   border-top: var(--st-border-w) solid var(--st-border);
   flex-shrink: 0;
 }
