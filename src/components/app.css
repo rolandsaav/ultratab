@@ -18,12 +18,13 @@
   --st-border-w: 1px;
 
   --st-bg: #404040;
+  --st-panel-bg: #363636;
   --st-border: #565656;
   --st-text: #ffffff;
   --st-text-muted: #a0a0a0;
   --st-error: #f38ba8;
   --st-hover: rgba(255, 255, 255, 0.1);
-  /* Popup corner radius; also the footer's horizontal padding, so contents clear the corners. */
+  /* Popup corner radius. */
   --st-radius: 1em;
   /* Sole accent — blended into the highlighted row when it is also the active tab. */
   --st-accent: #89b4fa;
@@ -36,6 +37,7 @@
   --st-control-size: 1.75em;
   --st-control-gap: 0.25em;
   --st-edge-pad: 0.75em;
+  --st-row-gap: 0.75em;
   --st-result-trailing-width: calc(
     3 * var(--st-control-size) + 2 * var(--st-control-gap)
   );
@@ -177,7 +179,7 @@ body {
   align-items: center;
   border-bottom: var(--st-border-w) solid var(--st-border);
   flex-shrink: 0;
-  padding-right: var(--st-edge-pad);
+  padding: 0 var(--st-edge-pad);
   overflow-y: auto;
 }
 
@@ -193,7 +195,7 @@ body {
 }
 
 /* Back arrow, left of the input when a view is pushed. Icon square sharing --st-control-size
-   and --st-edge-pad with .lead, so it centers on the favicon column below. */
+   with .lead, so it centers on the favicon column below. */
 .back {
   /* Reset the UA button font so em sizes resolve against :root (16px). */
   font: inherit;
@@ -203,7 +205,7 @@ body {
   flex-shrink: 0;
   width: var(--st-control-size);
   height: var(--st-control-size);
-  margin-left: var(--st-edge-pad);
+  margin-right: var(--st-row-gap);
   border: var(--st-border-w) solid var(--st-border);
   border-radius: 0.5em;
   background: rgba(255, 255, 255, 0.04);
@@ -222,9 +224,8 @@ body {
   height: 1.125em;
 }
 
-/* Tighten the gap to the input when the back button precedes it. */
 .back + .input {
-  padding-left: 0.5em;
+  padding-left: 0;
 }
 
 /* Right-aligned cluster shared by header toggles and row actions — the single source of
@@ -330,7 +331,7 @@ body {
 .item {
   display: flex;
   align-items: center;
-  gap: 0.75em;
+  gap: var(--st-row-gap);
   width: 100%;
   height: var(--st-row-height);
   padding: 0 var(--st-edge-pad);
@@ -526,8 +527,7 @@ body {
   align-items: center;
   justify-content: flex-end;
   gap: 0.45em;
-  /* Horizontal padding equals the corner radius so contents clear the rounded corners. */
-  padding: 0.375em var(--st-radius);
+  padding: 0.375em var(--st-edge-pad);
   border-top: var(--st-border-w) solid var(--st-border);
   flex-shrink: 0;
 }
@@ -585,10 +585,10 @@ body {
   --actions-collapsed-scale: 0.9;
   --actions-duration: 0.1s;
   position: absolute;
-  right: 0.75em;
-  bottom: 0.75em;
+  right: var(--st-edge-pad);
+  bottom: var(--st-edge-pad);
   width: 18em;
-  max-width: calc(100% - 1.5em);
+  max-width: calc(100% - 2 * var(--st-edge-pad));
   transform-origin: bottom right;
 }
 
@@ -633,7 +633,7 @@ body {
   width: 100%;
   display: flex;
   flex-direction: column;
-  background: var(--st-bg);
+  background: var(--st-panel-bg);
   border: var(--st-border-w) solid var(--st-border);
   border-radius: 0.75em;
   box-shadow: 0 0.5em 1.5em rgba(0, 0, 0, 0.8);
