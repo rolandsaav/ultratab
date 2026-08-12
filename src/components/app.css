@@ -37,9 +37,6 @@
   --st-control-gap: 0.25em;
   --st-edge-pad: 0.75em;
   --st-row-gap: 0.75em;
-  --st-row-text-start: calc(
-    var(--st-edge-pad) + var(--st-control-size) + var(--st-row-gap)
-  );
   --st-result-trailing-width: calc(
     3 * var(--st-control-size) + 2 * var(--st-control-gap)
   );
@@ -159,7 +156,7 @@ body {
 
 .input {
   width: 100%;
-  padding: 0.875em 1.125em 0.875em var(--st-row-text-start);
+  padding: 0.875em 1.125em;
   font-size: 1.125em;
   color: var(--st-text);
   background: transparent;
@@ -434,7 +431,6 @@ body {
 .trailing-label {
   min-width: 0;
   max-width: 100%;
-  padding-right: calc((var(--st-control-size) - var(--st-control-icon)) / 2);
   color: var(--st-text-muted);
   font-size: 0.75em;
   line-height: 1;
