@@ -208,6 +208,7 @@ body {
   width: var(--st-control-size);
   height: var(--st-control-size);
   margin-left: var(--st-edge-pad);
+  margin-right: var(--st-row-gap);
   border: var(--st-border-w) solid var(--st-border);
   border-radius: 0.5em;
   background: rgba(255, 255, 255, 0.04);
@@ -226,9 +227,8 @@ body {
   height: 1.125em;
 }
 
-/* Tighten the gap to the input when the back button precedes it. */
 .back + .input {
-  padding-left: var(--st-row-gap);
+  padding-left: 0;
 }
 
 /* Right-aligned cluster shared by header toggles and row actions — the single source of
