@@ -178,7 +178,7 @@ body {
   align-items: center;
   border-bottom: var(--st-border-w) solid var(--st-border);
   flex-shrink: 0;
-  padding-right: var(--st-edge-pad);
+  padding: 0 var(--st-edge-pad);
   overflow-y: auto;
 }
 
@@ -194,7 +194,7 @@ body {
 }
 
 /* Back arrow, left of the input when a view is pushed. Icon square sharing --st-control-size
-   and --st-edge-pad with .lead, so it centers on the favicon column below. */
+   with .lead, so it centers on the favicon column below. */
 .back {
   /* Reset the UA button font so em sizes resolve against :root (16px). */
   font: inherit;
@@ -204,7 +204,6 @@ body {
   flex-shrink: 0;
   width: var(--st-control-size);
   height: var(--st-control-size);
-  margin-left: var(--st-edge-pad);
   margin-right: var(--st-row-gap);
   border: var(--st-border-w) solid var(--st-border);
   border-radius: 0.5em;
@@ -527,7 +526,7 @@ body {
   align-items: center;
   justify-content: flex-end;
   gap: 0.45em;
-  padding: 0.375em var(--st-edge-pad) 0.375em var(--st-radius);
+  padding: 0.375em var(--st-edge-pad);
   border-top: var(--st-border-w) solid var(--st-border);
   flex-shrink: 0;
 }
