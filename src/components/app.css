@@ -18,12 +18,13 @@
   --st-border-w: 1px;
 
   --st-bg: #404040;
+  --st-panel-bg: #363636;
   --st-border: #565656;
   --st-text: #ffffff;
   --st-text-muted: #a0a0a0;
   --st-error: #f38ba8;
   --st-hover: rgba(255, 255, 255, 0.1);
-  /* Popup corner radius; also the footer's horizontal padding, so contents clear the corners. */
+  /* Popup corner radius. */
   --st-radius: 1em;
   /* Sole accent — blended into the highlighted row when it is also the active tab. */
   --st-accent: #89b4fa;
@@ -584,10 +585,10 @@ body {
   --actions-collapsed-scale: 0.9;
   --actions-duration: 0.1s;
   position: absolute;
-  right: 0.75em;
-  bottom: 0.75em;
+  right: var(--st-edge-pad);
+  bottom: var(--st-edge-pad);
   width: 18em;
-  max-width: calc(100% - 1.5em);
+  max-width: calc(100% - 2 * var(--st-edge-pad));
   transform-origin: bottom right;
 }
 
@@ -632,7 +633,7 @@ body {
   width: 100%;
   display: flex;
   flex-direction: column;
-  background: var(--st-bg);
+  background: var(--st-panel-bg);
   border: var(--st-border-w) solid var(--st-border);
   border-radius: 0.75em;
   box-shadow: 0 0.5em 1.5em rgba(0, 0, 0, 0.8);
