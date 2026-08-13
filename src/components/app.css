@@ -15,8 +15,8 @@
   --st-popup-max-height: 600px;
   --st-rows: 10;
   --st-row-height: 3.25em;
-  --st-action-rows: 5;
-  --st-action-row-height: 2em;
+  --st-action-rows: 5.5;
+  --st-action-row-height: 2rem;
   --st-border-w: 1px;
 
   --st-bg: #404040;
@@ -659,15 +659,20 @@ body {
 }
 
 .actions-list-viewport {
+  margin: 0.375em;
   max-height: calc(var(--st-action-rows) * var(--st-action-row-height));
   overflow-y: auto;
   overscroll-behavior: contain;
 }
 
+.actions-list-viewport [data-overlayscrollbars-viewport] {
+  max-height: inherit;
+}
+
 .actions-list {
   list-style: none;
   margin: 0;
-  padding: 0.375em;
+  padding: 0;
 }
 
 .action-item {
