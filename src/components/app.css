@@ -303,6 +303,12 @@ body {
   overflow-y: hidden;
 }
 
+.list.list--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .virtual-space {
   position: relative;
   width: 100%;
