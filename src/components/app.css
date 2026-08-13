@@ -15,6 +15,8 @@
   --st-popup-max-height: 600px;
   --st-rows: 10;
   --st-row-height: 3.25em;
+  --st-action-rows: 5;
+  --st-action-row-height: 2em;
   --st-border-w: 1px;
 
   --st-bg: #404040;
@@ -87,11 +89,12 @@ body {
     sans-serif;
 }
 
-/* Capped to the viewport so a short window shrinks the list instead of clipping rows. */
+/* Keep the palette tall enough for the panel; the list absorbs extra or tight space. */
 .popup {
   font-size: var(--st-font-size);
   width: 46em;
   max-width: 92vw;
+  min-height: var(--st-popup-min-height);
   max-height: calc(100vh - 24vh);
   background: var(--st-bg);
   border: var(--st-border-w) solid var(--st-border);
@@ -122,13 +125,15 @@ body {
 .body {
   position: relative;
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
   min-height: 0;
 }
 
-/* bits-ui Command.Root — continues .popup's flex column so the height constraint reaches .list. */
+/* Continues .popup's flex column so the height constraint reaches .list. */
 .command {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
   min-height: 0;
 }
@@ -282,6 +287,7 @@ body {
 
 /* Shows --st-rows rows when there's room, else shrinks to fit and scrolls. */
 .list {
+  flex: 1 1 auto;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -644,7 +650,9 @@ body {
   list-style: none;
   margin: 0;
   padding: 0.375em;
-  max-height: 15em;
+  max-height: calc(
+    var(--st-action-rows) * var(--st-action-row-height) + 2 * 0.375em
+  );
   overflow-y: auto;
   overscroll-behavior: contain;
 }
@@ -654,7 +662,8 @@ body {
   align-items: center;
   gap: 0.625em;
   width: 100%;
-  padding: 0.5em 0.625em;
+  height: var(--st-action-row-height);
+  padding: 0 0.625em;
   border: none;
   border-radius: 0.5em;
   background: none;
