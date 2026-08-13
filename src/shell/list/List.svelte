@@ -279,6 +279,12 @@
   }
 
   function onKeydown(e: KeyboardEvent): void {
+    if (e.key === 'Backspace' && !e.repeat && query === '') {
+      e.preventDefault();
+      nav.escape();
+      return;
+    }
+
     if (matchesShortcut(e, OPEN_ACTIONS_SHORTCUT)) {
       e.preventDefault();
       if (highlightedId) openActions(highlightedId);

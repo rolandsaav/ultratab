@@ -38,6 +38,12 @@
   });
 
   function onKeydown(e: KeyboardEvent): void {
+    if (e.key === 'Backspace' && !e.repeat && query === '') {
+      e.preventDefault();
+      onDismiss();
+      return;
+    }
+
     const match = matchAction(e, actions);
     if (match) {
       e.preventDefault();
