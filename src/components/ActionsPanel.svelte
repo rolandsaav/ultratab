@@ -17,7 +17,7 @@
 
   let query = $state('');
   let inputRef = $state<HTMLInputElement | null>(null);
-  let listViewportRef = $state<HTMLDivElement | null>(null);
+  let listRef = $state<HTMLElement | null>(null);
   let commandRoot = $state<ReturnType<typeof Command.Root> | null>(null);
   const [initializeOverlayScrollbars] = useOverlayScrollbars({
     options: () => ({
@@ -48,8 +48,7 @@
   }
 
   onMount(() => {
-    if (listViewportRef)
-      initializeOverlayScrollbars({ target: listViewportRef });
+    if (listRef) initializeOverlayScrollbars({ target: listRef });
   });
 </script>
 
@@ -66,27 +65,25 @@
       onkeydown={onKeydown}
       class="actions"
     >
-      <div bind:this={listViewportRef} class="actions-list-viewport">
-        <Command.List class="actions-list">
-          <Command.Empty class="empty">No actions</Command.Empty>
-          {#each actions as action (action.id)}
-            {@const Icon = action.icon}
-            <Command.Item
-              value={action.title}
-              onSelect={() => onRun(action)}
-              class="action-item"
-            >
-              <Icon size={16} />
-              <span class="action-label">{action.title}</span>
-              {#if action.shortcut}
-                <span class="action-shortcut"
-                  ><KeyCombo shortcut={action.shortcut} /></span
-                >
-              {/if}
-            </Command.Item>
-          {/each}
-        </Command.List>
-      </div>
+      <Command.List bind:ref={listRef} class="actions-list">
+        <Command.Empty class="empty">No actions</Command.Empty>
+        {#each actions as action (action.id)}
+          {@const Icon = action.icon}
+          <Command.Item
+            value={action.title}
+            onSelect={() => onRun(action)}
+            class="action-item"
+          >
+            <Icon size={16} />
+            <span class="action-label">{action.title}</span>
+            {#if action.shortcut}
+              <span class="action-shortcut"
+                ><KeyCombo shortcut={action.shortcut} /></span
+              >
+            {/if}
+          </Command.Item>
+        {/each}
+      </Command.List>
       <Command.Input
         bind:ref={inputRef}
         bind:value={query}
