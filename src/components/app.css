@@ -89,7 +89,7 @@ body {
     sans-serif;
 }
 
-/* Keep the palette tall enough for the panel; the list absorbs extra or tight space. */
+/* Keep the palette tall enough for the panel; the list grows or shrinks. */
 .popup {
   font-size: var(--st-font-size);
   width: 46em;
@@ -130,7 +130,7 @@ body {
   min-height: 0;
 }
 
-/* Continues .popup's flex column so the height constraint reaches .list. */
+/* Continue .popup's flex column so the height limit reaches .list. */
 .command {
   display: flex;
   flex: 1 1 auto;
