@@ -3,6 +3,7 @@ import browser from 'webextension-polyfill';
 // Background→content command name. The browser shortcut itself uses `_execute_action`;
 // this is the message sent to content scripts on injectable pages.
 export const TOGGLE_PALETTE = 'toggle-palette';
+export const PALETTE_PORT = 'ultratab-palette';
 
 // Background→content envelope; the literal `type` keeps it distinct from the RPC envelope.
 export interface PaletteCommandMessage {

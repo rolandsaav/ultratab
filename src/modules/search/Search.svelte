@@ -13,7 +13,14 @@
   } from './sources';
   import { status, toMessage } from '../../shell/status.svelte';
   import { warm } from './warm.svelte';
-  import type { Item, Kind, SourceToggles } from './parsers';
+  import { onTabChanged } from '../../bridge/tab-events';
+  import type { Tabs } from 'webextension-polyfill';
+  import {
+    parseTab,
+    type Item,
+    type Kind,
+    type SourceToggles,
+  } from './parsers';
 
   const DEFAULT_TOGGLES: SourceToggles = {
     tab: true,
@@ -26,7 +33,7 @@
   let items = $state<Item[]>([...warm.items]);
   let enabled = $state.raw<SourceToggles>({ ...DEFAULT_TOGGLES });
   let query = $state('');
-  let list = $state<List<Item> | null>(null);
+  let list = $state<List<Item, Item> | null>(null);
   let reqSeq = 0;
 
   const placeholder = $derived(searchPlaceholder(enabled));
@@ -41,8 +48,18 @@
     (Object.keys(DEFAULT_TOGGLES) as Kind[]).every(
       (kind) => toggles[kind] === DEFAULT_TOGGLES[kind],
     );
-  // Refresh the background cache on entry, then show the initial (empty-query) results.
-  onMount(refresh);
+  onMount(() => {
+    refresh();
+    return onTabChanged(handleTabChanged);
+  });
+
+  /*
+   * Tab actions do not change rows directly.
+   * The browser sends the final tab state back through the palette port.
+   */
+  function handleTabChanged(tab: Tabs.Tab): void {
+    updateTab(parseTab(tab, 0));
+  }
 
   async function runQuery(
     next: string,
@@ -88,10 +105,27 @@
     void invalidate();
   }
 
-  // Re-rank after an optimistic pin/mute so the row moves without a refetch.
   function update(): void {
-    items = rank([...items], query);
     void invalidate();
+  }
+
+  /*
+   * Update one visible tab row with the latest browser tab state.
+   * If the changed tab is not in this result set, do nothing.
+   * Keep the local `visited` value because browser tab data does not include it.
+   * Rank the list again because pin state can change row order.
+   */
+  function updateTab(updatedTab: Item): void {
+    if (!items.some((item) => item.id === updatedTab.id)) return;
+    items = rank(
+      items.map((item) =>
+        item.id === updatedTab.id
+          ? { ...updatedTab, visited: item.visited }
+          : item,
+      ),
+      query,
+    );
+    if (isDefaultView(query, enabled)) warm.items = items;
   }
 
   // A lone @-command enables its source and clears the input, then re-queries the

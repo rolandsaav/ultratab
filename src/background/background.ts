@@ -8,12 +8,19 @@ import {
   syncDetachedTabSuccession,
   syncReplacedTabSuccession,
 } from './succession';
-import { TOGGLE_PALETTE, sendPaletteCommand } from '../bridge/commands';
+import {
+  PALETTE_PORT,
+  TOGGLE_PALETTE,
+  sendPaletteCommand,
+} from '../bridge/commands';
+import { TAB_CHANGED, type TabChangedMessage } from '../bridge/tab-messages';
 import '../modules/search/background';
 import '../modules/downloads/background';
 
 const POPUP_PATH = 'popup.html';
 const INJECTABLE_PROTOCOLS = new Set(['http:', 'https:']);
+
+const palettePorts = new Set<browser.Runtime.Port>();
 
 /** Fire-and-forget a visited-set update, logging any failure. */
 function track(label: string, task: Promise<unknown>): void {
@@ -73,6 +80,24 @@ async function toggleForTab(tab: browser.Tabs.Tab): Promise<void> {
   }
 }
 
+function postToConnectedPalettes(message: unknown): void {
+  for (const port of palettePorts.keys()) {
+    try {
+      port.postMessage(message);
+    } catch {
+      palettePorts.delete(port);
+    }
+  }
+}
+
+browser.runtime.onConnect.addListener((port) => {
+  if (port.name !== PALETTE_PORT) return;
+  palettePorts.add(port);
+  port.onDisconnect.addListener(() => {
+    palettePorts.delete(port);
+  });
+});
+
 // Seed the visited set so pre-existing tabs don't flag as unvisited, and
 // rebuild browser-native tab close succession from current tab metadata.
 browser.runtime.onStartup.addListener(() =>
@@ -110,6 +135,11 @@ browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.url || changeInfo.status === 'complete') {
     track('sync-action-popup', setActionPopupForTab({ ...tab, id: tabId }));
   }
+  const message: TabChangedMessage = {
+    type: TAB_CHANGED,
+    tab: { ...tab, id: tabId },
+  };
+  postToConnectedPalettes(message);
 });
 
 // On injectable pages the action has no popup, so clicks route here and toggle the iframe.

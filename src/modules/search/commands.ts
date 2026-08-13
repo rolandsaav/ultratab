@@ -82,23 +82,11 @@ const openInThisTab = action<Item>({
   do: (entry) => searchApi.openUrlInCurrentTab(entry.url),
 });
 
-/** Reflect the new state on the item after the API call, so a failure leaves it
- * untouched. Paired with `after: 'update'`, which reorders the row without a refetch. */
-async function setMuted(tab: Item, muted: boolean): Promise<void> {
-  await searchApi.muteTab(tab.id, muted);
-  tab.muted = muted;
-}
-
-async function setPinned(tab: Item, pinned: boolean): Promise<void> {
-  await searchApi.pinTab(tab.id, pinned);
-  tab.pinned = pinned;
-}
-
 const muteTab = action<Item>({
   id: 'mute',
   title: 'Mute Tab',
   icon: VolumeX,
-  do: (tab) => setMuted(tab, true),
+  do: (tab) => searchApi.muteTab(tab.id, true),
   after: 'update',
 });
 
@@ -106,7 +94,7 @@ const unmuteTab = action<Item>({
   id: 'unmute',
   title: 'Unmute Tab',
   icon: Volume2,
-  do: (tab) => setMuted(tab, false),
+  do: (tab) => searchApi.muteTab(tab.id, false),
   after: 'update',
 });
 
@@ -114,7 +102,7 @@ const pinTab = action<Item>({
   id: 'pin',
   title: 'Pin Tab',
   icon: Pin,
-  do: (tab) => setPinned(tab, true),
+  do: (tab) => searchApi.pinTab(tab.id, true),
   after: 'update',
 });
 
@@ -122,7 +110,7 @@ const unpinTab = action<Item>({
   id: 'unpin',
   title: 'Unpin Tab',
   icon: PinOff,
-  do: (tab) => setPinned(tab, false),
+  do: (tab) => searchApi.pinTab(tab.id, false),
   after: 'update',
 });
 
