@@ -373,6 +373,7 @@
     role="listbox"
     class="list"
     class:list--inert={actionsOpen}
+    class:list--empty={items.length === 0}
   >
     {#if items.length === 0}
       <div class="empty">No results found</div>
