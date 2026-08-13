@@ -196,6 +196,7 @@ body {
   flex: 1;
   width: auto;
   min-width: 0;
+  padding-left: 0;
   border-bottom: none;
 }
 
@@ -227,10 +228,6 @@ body {
 .back svg {
   width: 1.125em;
   height: 1.125em;
-}
-
-.back + .input {
-  padding-left: 0;
 }
 
 /* Right-aligned cluster shared by header toggles and row actions — the single source of

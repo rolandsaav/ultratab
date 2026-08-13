@@ -4,7 +4,9 @@
   const Icon = $derived(command.icon);
 </script>
 
-<Icon size={16} />
+<span class="lead">
+  <Icon class="favicon fallback-icon" />
+</span>
 <div class="text">
   <div class="title">{command.title}</div>
 </div>
