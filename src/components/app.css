@@ -658,15 +658,16 @@ body {
   overflow: hidden;
 }
 
+.actions-list-viewport {
+  max-height: calc(var(--st-action-rows) * var(--st-action-row-height));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
 .actions-list {
   list-style: none;
   margin: 0;
   padding: 0.375em;
-  max-height: calc(
-    var(--st-action-rows) * var(--st-action-row-height) + 2 * 0.375em
-  );
-  overflow-y: auto;
-  overscroll-behavior: contain;
 }
 
 .action-item {
