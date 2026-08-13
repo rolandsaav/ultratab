@@ -397,6 +397,7 @@
               style={`transform: translateY(${virtualRow.start}px);`}
               onSelect={() => runRow(actions.primary, item)}
               onHighlight={() => {
+                if (actionsOpen) return;
                 highlightedIndex = virtualRow.index;
               }}
               onOpenActions={() => openActions(id)}

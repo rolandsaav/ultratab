@@ -292,7 +292,7 @@ body {
   overscroll-behavior: contain;
 }
 
-/* Freeze the results while the actions panel is open. */
+/* Lock list scrolling while the actions panel is open. */
 .list.list--inert {
   overflow-y: hidden;
 }
@@ -351,7 +351,7 @@ body {
   left: 0;
 }
 
-/* Highlight keyed off data-selected (not :hover) so hover can't move it. */
+/* Highlight keyed off data-selected; List owns when hover may change selection. */
 .item:focus-visible,
 .item[data-selected] {
   background: var(--st-border);
