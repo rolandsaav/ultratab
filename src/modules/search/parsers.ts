@@ -1,9 +1,15 @@
 import type { Tabs, Bookmarks, History } from 'webextension-polyfill';
 
 export type Kind = 'tab' | 'bookmark' | 'history';
+export type TimeKind = 'lastActive' | 'opened' | 'created';
 
 /** Which sources a search should cover. */
 export type SourceToggles = Record<Kind, boolean>;
+
+export interface ItemTime {
+  kind: TimeKind;
+  value: number;
+}
 
 export interface Item {
   kind: Kind;
@@ -11,7 +17,7 @@ export interface Item {
   title: string;
   url: string;
   favIconUrl: string;
-  lastAccessed: number;
+  time?: ItemTime;
   /** Only meaningful for tabs — whether it's been activated this session. */
   visited: boolean;
   /** Tab-only state, always false for bookmarks and history. */
@@ -29,7 +35,10 @@ export function parseTab(tab: Tabs.Tab, index: number): Item {
     title: tab.title || 'Untitled',
     url: tab.url || '',
     favIconUrl: tab.favIconUrl || '',
-    lastAccessed: tab.lastAccessed ?? 0,
+    time:
+      tab.lastAccessed != null
+        ? { kind: 'lastActive', value: tab.lastAccessed }
+        : undefined,
     visited: false,
     muted: tab.mutedInfo?.muted ?? false,
     audible: tab.audible ?? false,
@@ -45,7 +54,10 @@ export function parseBookmark(node: Bookmarks.BookmarkTreeNode): Item {
     title: node.title || node.url || 'Untitled',
     url: node.url || '',
     favIconUrl: '',
-    lastAccessed: node.dateAdded ?? 0,
+    time:
+      node.dateAdded != null
+        ? { kind: 'created', value: node.dateAdded }
+        : undefined,
     visited: false,
     muted: false,
     audible: false,
@@ -61,7 +73,10 @@ export function parseHistory(item: History.HistoryItem): Item {
     title: item.title || item.url || 'Untitled',
     url: item.url || '',
     favIconUrl: '',
-    lastAccessed: item.lastVisitTime ?? 0,
+    time:
+      item.lastVisitTime != null
+        ? { kind: 'opened', value: item.lastVisitTime }
+        : undefined,
     visited: false,
     muted: false,
     audible: false,
