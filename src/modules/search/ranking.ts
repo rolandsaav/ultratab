@@ -55,6 +55,9 @@ function cleanUrl(raw: string): string {
 const searchableText = (item: Item): string =>
   `${item.title} ${cleanUrl(item.url)}`;
 
+/** Missing time sorts as oldest. */
+const timeValue = (item: Item): number => item.time?.value ?? 0;
+
 function isDirectMatch(item: Item, query: string): boolean {
   const needle = cleanUrl(query).toLowerCase();
   if (!needle) return false;
@@ -80,7 +83,7 @@ function emptyQueryOrder(a: Item, b: Item): number {
   const sourceDelta =
     EMPTY_QUERY_SOURCE_PRIORITY[a.kind] - EMPTY_QUERY_SOURCE_PRIORITY[b.kind];
   if (sourceDelta !== 0) return sourceDelta;
-  return b.lastAccessed - a.lastAccessed;
+  return timeValue(b) - timeValue(a);
 }
 
 function queryOrder(a: QueryRank, b: QueryRank): number {
@@ -91,7 +94,7 @@ function queryOrder(a: QueryRank, b: QueryRank): number {
    * usually the one the user meant to switch back to.
    */
   if (a.tier === QueryTier.DirectTab) {
-    const recentDelta = b.item.lastAccessed - a.item.lastAccessed;
+    const recentDelta = timeValue(b.item) - timeValue(a.item);
     if (recentDelta !== 0) return recentDelta;
     return a.relevance - b.relevance;
   }
@@ -110,7 +113,7 @@ function queryOrder(a: QueryRank, b: QueryRank): number {
     b.recencyRank * RECENCY_WEIGHT;
   if (scoreA !== scoreB) return scoreA - scoreB;
 
-  return b.item.lastAccessed - a.item.lastAccessed;
+  return timeValue(b.item) - timeValue(a.item);
 }
 
 /**
@@ -146,7 +149,7 @@ export function rank(items: Item[], query: string): Item[] {
   const fuzzyRanks = new Map(fuzzyIdxs.map((idx, rank) => [idx, rank]));
   const recencyRanks = new Map(
     [...idxs]
-      .sort((a, b) => items[b].lastAccessed - items[a].lastAccessed)
+      .sort((a, b) => timeValue(items[b]) - timeValue(items[a]))
       .map((idx, rank) => [idx, rank]),
   );
 

@@ -1,9 +1,15 @@
 import type { Tabs, Bookmarks, History } from 'webextension-polyfill';
 
 export type Kind = 'tab' | 'bookmark' | 'history';
+export type TimeKind = 'lastActive' | 'opened' | 'created';
 
 /** Which sources a search should cover. */
 export type SourceToggles = Record<Kind, boolean>;
+
+export interface ItemTime {
+  kind: TimeKind;
+  value: number;
+}
 
 export interface Item {
   kind: Kind;
@@ -11,7 +17,7 @@ export interface Item {
   title: string;
   url: string;
   favIconUrl: string;
-  lastAccessed: number;
+  time?: ItemTime;
   /** Only meaningful for tabs — whether it's been activated this session. */
   visited: boolean;
   /** Tab-only state, always false for bookmarks and history. */
@@ -22,6 +28,14 @@ export interface Item {
   active: boolean;
 }
 
+function itemTime(
+  kind: TimeKind,
+  value: number | undefined,
+): ItemTime | undefined {
+  if (value == null) return undefined;
+  return { kind, value };
+}
+
 export function parseTab(tab: Tabs.Tab, index: number): Item {
   return {
     kind: 'tab',
@@ -29,7 +43,7 @@ export function parseTab(tab: Tabs.Tab, index: number): Item {
     title: tab.title || 'Untitled',
     url: tab.url || '',
     favIconUrl: tab.favIconUrl || '',
-    lastAccessed: tab.lastAccessed ?? 0,
+    time: itemTime('lastActive', tab.lastAccessed),
     visited: false,
     muted: tab.mutedInfo?.muted ?? false,
     audible: tab.audible ?? false,
@@ -45,7 +59,7 @@ export function parseBookmark(node: Bookmarks.BookmarkTreeNode): Item {
     title: node.title || node.url || 'Untitled',
     url: node.url || '',
     favIconUrl: '',
-    lastAccessed: node.dateAdded ?? 0,
+    time: itemTime('created', node.dateAdded),
     visited: false,
     muted: false,
     audible: false,
@@ -61,7 +75,7 @@ export function parseHistory(item: History.HistoryItem): Item {
     title: item.title || item.url || 'Untitled',
     url: item.url || '',
     favIconUrl: '',
-    lastAccessed: item.lastVisitTime ?? 0,
+    time: itemTime('opened', item.lastVisitTime),
     visited: false,
     muted: false,
     audible: false,
