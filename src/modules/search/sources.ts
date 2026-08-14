@@ -50,6 +50,11 @@ const relativeTimeFormat = new Intl.RelativeTimeFormat('en', {
   numeric: 'auto',
 });
 
+const dateTimeFormat = new Intl.DateTimeFormat('en', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+});
+
 const TIME_LABELS: Record<TimeKind, string> = {
   lastActive: 'Last Active',
   opened: 'Opened',
@@ -86,10 +91,7 @@ export function formatItemTime(time: ItemTime | undefined): string {
 
 export function formatItemDateTime(time: ItemTime | undefined): string {
   if (!time) return '';
-  return new Intl.DateTimeFormat('en', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(time.value);
+  return dateTimeFormat.format(time.value);
 }
 
 /** Input placeholder naming the enabled sources, e.g. "Search tabs and history…". */
