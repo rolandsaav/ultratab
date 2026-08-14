@@ -28,6 +28,14 @@ export interface Item {
   active: boolean;
 }
 
+function itemTime(
+  kind: TimeKind,
+  value: number | undefined,
+): ItemTime | undefined {
+  if (value == null) return undefined;
+  return { kind, value };
+}
+
 export function parseTab(tab: Tabs.Tab, index: number): Item {
   return {
     kind: 'tab',
@@ -35,10 +43,7 @@ export function parseTab(tab: Tabs.Tab, index: number): Item {
     title: tab.title || 'Untitled',
     url: tab.url || '',
     favIconUrl: tab.favIconUrl || '',
-    time:
-      tab.lastAccessed != null
-        ? { kind: 'lastActive', value: tab.lastAccessed }
-        : undefined,
+    time: itemTime('lastActive', tab.lastAccessed),
     visited: false,
     muted: tab.mutedInfo?.muted ?? false,
     audible: tab.audible ?? false,
@@ -54,10 +59,7 @@ export function parseBookmark(node: Bookmarks.BookmarkTreeNode): Item {
     title: node.title || node.url || 'Untitled',
     url: node.url || '',
     favIconUrl: '',
-    time:
-      node.dateAdded != null
-        ? { kind: 'created', value: node.dateAdded }
-        : undefined,
+    time: itemTime('created', node.dateAdded),
     visited: false,
     muted: false,
     audible: false,
@@ -73,10 +75,7 @@ export function parseHistory(item: History.HistoryItem): Item {
     title: item.title || item.url || 'Untitled',
     url: item.url || '',
     favIconUrl: '',
-    time:
-      item.lastVisitTime != null
-        ? { kind: 'opened', value: item.lastVisitTime }
-        : undefined,
+    time: itemTime('opened', item.lastVisitTime),
     visited: false,
     muted: false,
     audible: false,

@@ -55,8 +55,6 @@ function cleanUrl(raw: string): string {
 const searchableText = (item: Item): string =>
   `${item.title} ${cleanUrl(item.url)}`;
 
-const recencyValue = (item: Item): number => item.time?.value ?? 0;
-
 function isDirectMatch(item: Item, query: string): boolean {
   const needle = cleanUrl(query).toLowerCase();
   if (!needle) return false;
@@ -82,7 +80,7 @@ function emptyQueryOrder(a: Item, b: Item): number {
   const sourceDelta =
     EMPTY_QUERY_SOURCE_PRIORITY[a.kind] - EMPTY_QUERY_SOURCE_PRIORITY[b.kind];
   if (sourceDelta !== 0) return sourceDelta;
-  return recencyValue(b) - recencyValue(a);
+  return (b.time?.value ?? 0) - (a.time?.value ?? 0);
 }
 
 function queryOrder(a: QueryRank, b: QueryRank): number {
@@ -93,7 +91,7 @@ function queryOrder(a: QueryRank, b: QueryRank): number {
    * usually the one the user meant to switch back to.
    */
   if (a.tier === QueryTier.DirectTab) {
-    const recentDelta = recencyValue(b.item) - recencyValue(a.item);
+    const recentDelta = (b.item.time?.value ?? 0) - (a.item.time?.value ?? 0);
     if (recentDelta !== 0) return recentDelta;
     return a.relevance - b.relevance;
   }
@@ -112,7 +110,7 @@ function queryOrder(a: QueryRank, b: QueryRank): number {
     b.recencyRank * RECENCY_WEIGHT;
   if (scoreA !== scoreB) return scoreA - scoreB;
 
-  return recencyValue(b.item) - recencyValue(a.item);
+  return (b.item.time?.value ?? 0) - (a.item.time?.value ?? 0);
 }
 
 /**
@@ -148,7 +146,7 @@ export function rank(items: Item[], query: string): Item[] {
   const fuzzyRanks = new Map(fuzzyIdxs.map((idx, rank) => [idx, rank]));
   const recencyRanks = new Map(
     [...idxs]
-      .sort((a, b) => recencyValue(items[b]) - recencyValue(items[a]))
+      .sort((a, b) => (items[b].time?.value ?? 0) - (items[a].time?.value ?? 0))
       .map((idx, rank) => [idx, rank]),
   );
 
