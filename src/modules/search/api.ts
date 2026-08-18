@@ -13,6 +13,8 @@ export interface SearchApi {
   activateTab(id: string): Promise<void>;
   closeTab(id: string): Promise<void>;
   duplicateTab(id: string): Promise<void>;
+  unloadTab(id: string): Promise<void>;
+  loadTab(id: string): Promise<void>;
   muteTab(id: string, muted: boolean): Promise<void>;
   reloadTab(id: string): Promise<void>;
   pinTab(id: string, pinned: boolean): Promise<void>;

@@ -521,6 +521,10 @@ body {
   text-overflow: ellipsis;
 }
 
+.title.unloaded {
+  color: var(--st-text-muted);
+}
+
 .subtitle {
   display: flex;
   align-items: baseline;

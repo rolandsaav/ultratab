@@ -24,7 +24,7 @@
   {/if}
 </span>
 <div class="text">
-  <div class="title">{item.title}</div>
+  <div class="title" class:unloaded={item.discarded}>{item.title}</div>
   <div class="subtitle">
     <span class="url">{item.url}</span>
     {#if time}
