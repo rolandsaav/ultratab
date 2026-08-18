@@ -1,4 +1,5 @@
 import browser from 'webextension-polyfill';
+import { compareTabRecency } from './tab-recency';
 
 type Tab = browser.Tabs.Tab;
 
@@ -13,14 +14,6 @@ function tabId(tab: Tab): number | undefined {
   return tab.id;
 }
 
-/** Newest accessed tabs should close back to the next newest tab. */
-function sortByMostRecent(a: Tab, b: Tab): number {
-  const recentDelta = (b.lastAccessed ?? 0) - (a.lastAccessed ?? 0);
-  if (recentDelta !== 0) return recentDelta;
-
-  return b.index - a.index;
-}
-
 /** Build the tab ID chain passed to moveInSuccession, optionally pinning one tab first. */
 function tabIdsBySuccession(tabs: Tab[], promotedTabId?: number): number[] {
   const ids = new Set(tabs.map(tabId).filter((id) => id != null));
@@ -28,7 +21,7 @@ function tabIdsBySuccession(tabs: Tab[], promotedTabId?: number): number[] {
     promotedTabId != null && ids.has(promotedTabId) ? [promotedTabId] : [];
   const rest = tabs
     .filter((tab) => tabId(tab) != null && tab.id !== promotedTabId)
-    .sort(sortByMostRecent)
+    .sort(compareTabRecency)
     .map((tab) => tab.id!);
 
   return [...promoted, ...rest];
