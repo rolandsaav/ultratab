@@ -277,6 +277,24 @@ body {
   display: none;
 }
 
+.control-icon-stack,
+.control-icon-state {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--st-control-icon);
+  height: var(--st-control-icon);
+}
+
+.control-icon-stack {
+  position: relative;
+}
+
+.control-icon-state {
+  position: absolute;
+  inset: 0;
+}
+
 /* Enabled source toggle: white. */
 .source.enabled {
   color: var(--st-text);

@@ -168,19 +168,28 @@ function muteAction(item: Item): InlineAction<Item> {
     case 'muted':
       return {
         command: unmuteTab,
+        slot: 'mute',
         icon: VolumeX,
         hoverIcon: Volume2,
+        blurIcon: true,
         persistent: true,
       };
     case 'playing':
       return {
         command: muteTab,
+        slot: 'mute',
         icon: Volume2,
         hoverIcon: VolumeX,
+        blurIcon: true,
         persistent: true,
       };
     case 'silent':
-      return { command: muteTab, icon: VolumeX };
+      return {
+        command: muteTab,
+        slot: 'mute',
+        icon: VolumeX,
+        blurIcon: true,
+      };
   }
 }
 
@@ -191,9 +200,21 @@ function inlineActions(item: Item): InlineAction<Item>[] {
 
   // Pin: same glyph pinned or not — the persistent flag and colour carry the state.
   if (item.pinned) {
-    actions.push({ command: unpinTab, icon: Pin, persistent: true });
+    actions.push({
+      command: unpinTab,
+      slot: 'pin',
+      icon: Pin,
+      hoverIcon: PinOff,
+      blurIcon: true,
+      persistent: true,
+    });
   } else {
-    actions.push({ command: pinTab, icon: Pin });
+    actions.push({
+      command: pinTab,
+      slot: 'pin',
+      icon: Pin,
+      blurIcon: true,
+    });
   }
 
   actions.push({ command: closeTab });
