@@ -145,13 +145,18 @@
 
   // Toggle a source, but never disable the last one. Re-query so a newly-enabled
   // source is fetched (the background fills it lazily) or a disabled one drops out.
-  function toggle(kind: Kind): void {
-    list?.focusInput();
+  function toggle(kind: Kind): boolean {
     const onCount = Object.values(enabled).filter(Boolean).length;
-    if (enabled[kind] && onCount === 1) return;
+    if (enabled[kind] && onCount === 1) return false;
     const next = { ...enabled, [kind]: !enabled[kind] };
     enabled = next;
     void runQuery(query, next, true);
+    return true;
+  }
+
+  function onSourceToggle(kind: Kind, event: MouseEvent): void {
+    const changed = toggle(kind);
+    if (changed && event.detail > 0) list?.focusInput();
   }
 </script>
 
@@ -171,7 +176,7 @@
   onUpdate={update}
 >
   {#snippet header()}
-    <SourceIcons {enabled} onToggle={toggle} />
+    <SourceIcons {enabled} onToggle={onSourceToggle} />
   {/snippet}
   {#snippet row(item)}
     <ItemRow {item} />

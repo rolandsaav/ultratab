@@ -155,6 +155,16 @@ function unloadToggle(item: Item): Command<Item> | undefined {
 
 type AudioState = 'muted' | 'playing' | 'silent';
 
+const MUTE_CONTROL = {
+  slot: 'mute',
+  animateIconChange: true,
+} as const;
+
+const PIN_CONTROL = {
+  slot: 'pin',
+  animateIconChange: true,
+} as const;
+
 function audioState(item: Item): AudioState {
   if (item.muted) return 'muted';
   if (item.audible) return 'playing';
@@ -167,28 +177,25 @@ function muteAction(item: Item): InlineAction<Item> {
   switch (audioState(item)) {
     case 'muted':
       return {
+        ...MUTE_CONTROL,
         command: unmuteTab,
-        slot: 'mute',
         icon: VolumeX,
         hoverIcon: Volume2,
-        blurIcon: true,
         persistent: true,
       };
     case 'playing':
       return {
+        ...MUTE_CONTROL,
         command: muteTab,
-        slot: 'mute',
         icon: Volume2,
         hoverIcon: VolumeX,
-        blurIcon: true,
         persistent: true,
       };
     case 'silent':
       return {
+        ...MUTE_CONTROL,
         command: muteTab,
-        slot: 'mute',
         icon: VolumeX,
-        blurIcon: true,
       };
   }
 }
@@ -201,19 +208,17 @@ function inlineActions(item: Item): InlineAction<Item>[] {
   // Pin: same glyph pinned or not — the persistent flag and colour carry the state.
   if (item.pinned) {
     actions.push({
+      ...PIN_CONTROL,
       command: unpinTab,
-      slot: 'pin',
       icon: Pin,
       hoverIcon: PinOff,
-      blurIcon: true,
       persistent: true,
     });
   } else {
     actions.push({
+      ...PIN_CONTROL,
       command: pinTab,
-      slot: 'pin',
       icon: Pin,
-      blurIcon: true,
     });
   }
 

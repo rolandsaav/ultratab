@@ -12,8 +12,8 @@ export interface InlineAction<T = any> {
   icon?: Component;
   /** Swapped in on hover to preview what a click does. */
   hoverIcon?: Component;
-  /** Crossfade state changes through a small blur. */
-  blurIcon?: boolean;
+  /** Animate the icon when this control's state changes. */
+  animateIconChange?: boolean;
   /** Keep visible at rest, not just on hover — for state-indicator actions. */
   persistent?: boolean;
 }

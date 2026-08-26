@@ -96,7 +96,7 @@
                 onRunInline(i);
               }}
             >
-              {#if action.blurIcon}
+              {#if action.animateIconChange}
                 <span class="control-icon-stack">
                   {#key action.command.id}
                     <span class="control-icon-state" transition:blurSwap>

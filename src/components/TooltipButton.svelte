@@ -1,16 +1,14 @@
 <script lang="ts">
   import { Tooltip } from 'bits-ui';
   import type { Snippet } from 'svelte';
-  import type { HTMLButtonAttributes } from 'svelte/elements';
 
-  type Props = {
+  type Props = Omit<
+    Tooltip.TriggerProps,
+    'aria-label' | 'child' | 'children'
+  > & {
     label: string;
     children: Snippet;
-    side?: 'top' | 'right' | 'bottom' | 'left';
-    type?: HTMLButtonAttributes['type'];
-    class?: HTMLButtonAttributes['class'];
-    'aria-pressed'?: HTMLButtonAttributes['aria-pressed'];
-    onclick?: HTMLButtonAttributes['onclick'];
+    side?: Tooltip.ContentProps['side'];
   };
 
   let {
@@ -18,20 +16,12 @@
     children,
     side = 'top',
     type = 'button',
-    class: className,
-    'aria-pressed': ariaPressed,
-    onclick,
+    ...buttonProps
   }: Props = $props();
 </script>
 
 <Tooltip.Root>
-  <Tooltip.Trigger
-    {type}
-    class={className}
-    aria-label={label}
-    aria-pressed={ariaPressed}
-    {onclick}
-  >
+  <Tooltip.Trigger {type} {...buttonProps} aria-label={label}>
     {@render children()}
   </Tooltip.Trigger>
   <Tooltip.Portal>

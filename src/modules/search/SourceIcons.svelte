@@ -5,7 +5,7 @@
 
   interface Props {
     enabled: SourceToggles;
-    onToggle: (kind: Kind) => void;
+    onToggle: (kind: Kind, event: MouseEvent) => void;
   }
 
   let { enabled, onToggle }: Props = $props();
@@ -20,7 +20,7 @@
       label={SOURCE_META[kind].label}
       side="bottom"
       aria-pressed={enabled[kind]}
-      onclick={() => onToggle(kind)}
+      onclick={(event) => onToggle(kind, event)}
     >
       <Icon />
     </TooltipButton>
