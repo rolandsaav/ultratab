@@ -256,7 +256,14 @@ body {
   transition:
     opacity 0.08s ease,
     color 0.08s ease,
-    background 0.08s ease;
+    background 0.08s ease,
+    transform 0.08s ease-out;
+}
+
+/* Give search source toggles and result actions immediate press feedback. */
+.source:active,
+.item-action:active {
+  transform: scale(0.97);
 }
 
 /* One glyph size across both clusters. */
@@ -653,6 +660,16 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .source,
+  .item-action {
+    transition-duration: 0s;
+  }
+
+  .source:active,
+  .item-action:active {
+    transform: none;
+  }
+
   .actions-anchor[data-state] {
     animation: none;
   }
