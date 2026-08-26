@@ -1,6 +1,7 @@
 <script lang="ts">
   import { SOURCE_META, SOURCE_ORDER } from './sources';
   import type { Kind, SourceToggles } from './parsers';
+  import TooltipButton from '../../components/TooltipButton.svelte';
 
   interface Props {
     enabled: SourceToggles;
@@ -13,15 +14,15 @@
 <div class="controls">
   {#each SOURCE_ORDER as kind (kind)}
     {@const Icon = SOURCE_META[kind].icon}
-    <button
+    <TooltipButton
       type="button"
-      class="control source"
-      class:enabled={enabled[kind]}
+      class={['control source', enabled[kind] && 'enabled']}
+      label={SOURCE_META[kind].label}
+      side="bottom"
       aria-pressed={enabled[kind]}
-      title={SOURCE_META[kind].label}
       onclick={() => onToggle(kind)}
     >
       <Icon />
-    </button>
+    </TooltipButton>
   {/each}
 </div>

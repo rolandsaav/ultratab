@@ -18,6 +18,7 @@
   import ActionsPanel from '../../components/ActionsPanel.svelte';
   import { runCommand } from './run';
   import ListItem from './ListItem.svelte';
+  import TooltipButton from '../../components/TooltipButton.svelte';
   import { allActions, hasSecondaryActions, type RowActions } from './context';
 
   const OVERSCAN = 6;
@@ -353,14 +354,15 @@
 
   <div class="input-row">
     {#if nav.canPop}
-      <button
+      <TooltipButton
         type="button"
         class="back"
-        aria-label="Back"
+        label="Back"
+        side="bottom"
         onclick={() => nav.pop()}
       >
         <ArrowLeft size={18} />
-      </button>
+      </TooltipButton>
     {/if}
     <input
       bind:this={inputRef}

@@ -5,6 +5,7 @@
   import RootList from './RootList.svelte';
   import Footer from '../components/Footer.svelte';
   import { cubicIn, cubicOut } from 'svelte/easing';
+  import { Tooltip } from 'bits-ui';
 
   type Surface = 'iframe' | 'popup';
 
@@ -57,35 +58,41 @@
   }
 </script>
 
-{#if nav.visible && Current}
-  <div
-    class="overlay"
-    role="button"
-    tabindex="0"
-    in:popupEnter
-    out:popupExit
-    onoutroend={teardown}
-    onclick={(e) => {
-      if (e.target === e.currentTarget) nav.close();
-    }}
-    onkeydown={(e) => {
-      if (e.key === 'Enter' && e.target === e.currentTarget) nav.close();
-    }}
-  >
-    <div class="popup" role="dialog" aria-modal="true" tabindex="-1">
-      <div class="body">
-        {#key nav.current}
-          <Current />
-        {/key}
+<Tooltip.Provider
+  delayDuration={500}
+  skipDelayDuration={300}
+  disableHoverableContent
+>
+  {#if nav.visible && Current}
+    <div
+      class="overlay"
+      role="button"
+      tabindex="0"
+      in:popupEnter
+      out:popupExit
+      onoutroend={teardown}
+      onclick={(e) => {
+        if (e.target === e.currentTarget) nav.close();
+      }}
+      onkeydown={(e) => {
+        if (e.key === 'Enter' && e.target === e.currentTarget) nav.close();
+      }}
+    >
+      <div class="popup" role="dialog" aria-modal="true" tabindex="-1">
+        <div class="body">
+          {#key nav.current}
+            <Current />
+          {/key}
+        </div>
+        {#if status.error}
+          <div class="error">{status.error}</div>
+        {/if}
+        <Footer
+          info={footer.info}
+          primaryLabel={footer.primaryLabel}
+          hasActions={footer.hasActions}
+        />
       </div>
-      {#if status.error}
-        <div class="error">{status.error}</div>
-      {/if}
-      <Footer
-        info={footer.info}
-        primaryLabel={footer.primaryLabel}
-        hasActions={footer.hasActions}
-      />
     </div>
-  </div>
-{/if}
+  {/if}
+</Tooltip.Provider>

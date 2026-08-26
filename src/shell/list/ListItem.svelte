@@ -3,6 +3,7 @@
   import { cubicOut } from 'svelte/easing';
   import type { TransitionConfig } from 'svelte/transition';
   import type { RowActions } from './context';
+  import TooltipButton from '../../components/TooltipButton.svelte';
 
   interface Props {
     id: string;
@@ -86,12 +87,10 @@
         <div class="controls row-controls">
           {#each actions.inline as action, i (action.slot ?? action.command.id)}
             {@const Icon = action.icon ?? action.command.icon}
-            <button
+            <TooltipButton
               type="button"
-              class="control item-action"
-              class:persistent={action.persistent}
-              title={action.command.title}
-              aria-label={action.command.title}
+              class={['control item-action', action.persistent && 'persistent']}
+              label={action.command.title}
               onclick={(e) => {
                 e.stopPropagation();
                 onRunInline(i);
@@ -118,7 +117,7 @@
               {:else}
                 <Icon />
               {/if}
-            </button>
+            </TooltipButton>
           {/each}
         </div>
       {/if}
