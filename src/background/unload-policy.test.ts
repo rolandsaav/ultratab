@@ -1,11 +1,8 @@
 import { describe, expect, it } from 'bun:test';
-import {
-  RECENT_TAB_LIMIT,
-  selectTabsToUnload,
-  type TabUnloadState,
-} from './unload-policy';
+import type { Tabs } from 'webextension-polyfill';
+import { RECENT_TAB_LIMIT, selectTabsToUnload } from './unload-policy';
 
-function tab(id: number, state: Partial<TabUnloadState> = {}): TabUnloadState {
+function tab(id: number, state: Partial<Tabs.Tab> = {}): Tabs.Tab {
   return {
     id,
     index: id,
@@ -16,10 +13,10 @@ function tab(id: number, state: Partial<TabUnloadState> = {}): TabUnloadState {
     autoDiscardable: true,
     discarded: false,
     ...state,
-  };
+  } as Tabs.Tab;
 }
 
-function tabs(count: number): TabUnloadState[] {
+function tabs(count: number): Tabs.Tab[] {
   return Array.from({ length: count }, (_, index) => tab(index + 1));
 }
 
@@ -42,7 +39,7 @@ describe('selectTabsToUnload', () => {
     ['audible', { audible: true }],
     ['protected', { autoDiscardable: false }],
     ['already unloaded', { discarded: true }],
-  ] satisfies Array<[string, Partial<TabUnloadState>]>)(
+  ] satisfies Array<[string, Partial<Tabs.Tab>]>)(
     'does not select an old %s tab',
     (_name, state) => {
       const items = tabs(RECENT_TAB_LIMIT + 1);
