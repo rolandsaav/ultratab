@@ -184,7 +184,6 @@ browser.action.onClicked.addListener((tab) => {
   track('toggle-palette', toggleForTab(tab));
 });
 
-// Also run on service-worker wake / extension reload.
+// Also restore popup and succession state on service-worker wake / extension reload.
 track('sync-action-popup', syncActiveTabPopup());
 track('sync-succession', syncAllTabSuccession());
-track('sync-unloading', syncAllTabUnloading());

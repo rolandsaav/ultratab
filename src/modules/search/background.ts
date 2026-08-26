@@ -55,9 +55,6 @@ const handlers: SearchApi = {
   async unloadTab(id) {
     await browser.tabs.discard(toTabId(id));
   },
-  async loadTab(id) {
-    await browser.tabs.reload(toTabId(id));
-  },
   async muteTab(id, muted) {
     await browser.tabs.update(toTabId(id), { muted });
   },

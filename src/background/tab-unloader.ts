@@ -1,16 +1,13 @@
 import browser from 'webextension-polyfill';
 import { selectTabsToUnload } from './unload-policy';
-import { createWindowReconcileQueue } from './window-reconcile-queue';
 
 /** Apply the unload policy to one normal browser window. */
-async function reconcileWindow(windowId: number): Promise<void> {
+export async function syncWindowUnloading(windowId: number): Promise<void> {
   const tabs = await browser.tabs.query({ windowId });
   const tabIds = selectTabsToUnload(tabs);
 
   await Promise.all(tabIds.map((tabId) => browser.tabs.discard(tabId)));
 }
-
-export const syncWindowUnloading = createWindowReconcileQueue(reconcileWindow);
 
 /** Apply the unload policy to every normal browser window. */
 export async function syncAllTabUnloading(): Promise<void> {

@@ -1,24 +1,21 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, mock } from 'bun:test';
 
-const browser = vi.hoisted(() => ({
+const browser = {
   tabs: {
     TAB_ID_NONE: -1,
-    query: vi.fn(),
-    discard: vi.fn(),
-    get: vi.fn(),
+    query: mock(),
+    discard: mock(),
+    get: mock(),
   },
   windows: {
-    getAll: vi.fn(),
+    getAll: mock(),
   },
-}));
+};
 
-vi.mock('webextension-polyfill', () => ({ default: browser }));
+mock.module('webextension-polyfill', () => ({ default: browser }));
 
-import {
-  syncAllTabUnloading,
-  syncReplacedTabUnloading,
-  syncWindowUnloading,
-} from './tab-unloader';
+const { syncAllTabUnloading, syncReplacedTabUnloading, syncWindowUnloading } =
+  await import('./tab-unloader');
 
 function tabs(count: number) {
   return Array.from({ length: count }, (_, index) => ({
@@ -35,7 +32,10 @@ function tabs(count: number) {
 
 describe('tab unloader integration', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    browser.tabs.query.mockClear();
+    browser.tabs.discard.mockClear();
+    browser.tabs.get.mockClear();
+    browser.windows.getAll.mockClear();
     browser.tabs.discard.mockResolvedValue(undefined);
   });
 

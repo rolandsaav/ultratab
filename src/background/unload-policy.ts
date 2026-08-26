@@ -1,15 +1,26 @@
-import { compareTabRecency, type RecentTab } from './tab-recency';
+import type { Tabs } from 'webextension-polyfill';
 
 export const RECENT_TAB_LIMIT = 10;
 
 /** Browser tab state that can change automatic unload eligibility. */
-export interface TabUnloadState extends RecentTab {
-  id?: number;
-  active?: boolean;
-  pinned?: boolean;
-  audible?: boolean;
-  autoDiscardable?: boolean;
-  discarded?: boolean;
+export type TabUnloadState = Pick<
+  Tabs.Tab,
+  | 'id'
+  | 'index'
+  | 'lastAccessed'
+  | 'active'
+  | 'pinned'
+  | 'audible'
+  | 'autoDiscardable'
+  | 'discarded'
+>;
+
+/** Put recently accessed tabs first, then use tab order as a stable fallback. */
+function compareForUnloading(a: TabUnloadState, b: TabUnloadState): number {
+  const recentDelta = (b.lastAccessed ?? 0) - (a.lastAccessed ?? 0);
+  if (recentDelta !== 0) return recentDelta;
+
+  return b.index - a.index;
 }
 
 function canUnload(
@@ -27,17 +38,10 @@ function canUnload(
 }
 
 /** Select old tabs from one window. This function does not change browser state. */
-export function selectTabsToUnload(
-  tabs: TabUnloadState[],
-  recentTabLimit = RECENT_TAB_LIMIT,
-): number[] {
-  if (!Number.isInteger(recentTabLimit) || recentTabLimit < 0) {
-    throw new RangeError('The recent tab limit must be a nonnegative integer.');
-  }
-
+export function selectTabsToUnload(tabs: TabUnloadState[]): number[] {
   return [...tabs]
-    .sort(compareTabRecency)
-    .slice(recentTabLimit)
+    .sort(compareForUnloading)
+    .slice(RECENT_TAB_LIMIT)
     .filter(canUnload)
     .map((tab) => tab.id);
 }

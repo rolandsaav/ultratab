@@ -82,7 +82,7 @@ const loadTab = action<Item>({
   id: 'load',
   title: 'Load Tab',
   icon: ArchiveRestore,
-  do: (tab) => searchApi.loadTab(tab.id),
+  do: (tab) => searchApi.reloadTab(tab.id),
   after: 'update',
 });
 

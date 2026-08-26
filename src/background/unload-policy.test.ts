@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import {
   RECENT_TAB_LIMIT,
   selectTabsToUnload,
@@ -103,9 +103,5 @@ describe('selectTabsToUnload', () => {
     selectTabsToUnload(items);
 
     expect(items).toEqual(originalOrder);
-  });
-
-  it.each([-1, 1.5])('rejects the invalid limit %s', (limit) => {
-    expect(() => selectTabsToUnload([], limit)).toThrow(RangeError);
   });
 });
