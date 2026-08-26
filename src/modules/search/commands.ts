@@ -75,7 +75,7 @@ const unloadTab = action<Item>({
   title: 'Unload Tab',
   icon: Archive,
   do: (tab) => searchApi.unloadTab(tab.id),
-  after: 'update',
+  after: 'stay',
 });
 
 const loadTab = action<Item>({
@@ -83,7 +83,7 @@ const loadTab = action<Item>({
   title: 'Load Tab',
   icon: ArchiveRestore,
   do: (tab) => searchApi.reloadTab(tab.id),
-  after: 'update',
+  after: 'stay',
 });
 
 const openInNewTab = action<Item>({
