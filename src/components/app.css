@@ -262,7 +262,6 @@ body {
 
 /* Give search source toggles and result actions immediate press feedback. */
 .source:active,
-.source.pressed,
 .item-action:active {
   transform: scale(0.97);
 }
@@ -667,7 +666,6 @@ body {
   }
 
   .source:active,
-  .source.pressed,
   .item-action:active {
     transform: none;
   }

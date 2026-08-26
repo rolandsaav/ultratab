@@ -223,6 +223,10 @@
     get(virtualizer).scrollToIndex(0);
   }
 
+  export function focusInput(): void {
+    inputRef?.focus({ preventScroll: true });
+  }
+
   function openActions(id: string): void {
     const index = indexById.get(id);
     const item = itemAt(index);

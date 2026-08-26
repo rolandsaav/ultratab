@@ -146,6 +146,7 @@
   // Toggle a source, but never disable the last one. Re-query so a newly-enabled
   // source is fetched (the background fills it lazily) or a disabled one drops out.
   function toggle(kind: Kind): void {
+    list?.focusInput();
     const onCount = Object.values(enabled).filter(Boolean).length;
     if (enabled[kind] && onCount === 1) return;
     const next = { ...enabled, [kind]: !enabled[kind] };
