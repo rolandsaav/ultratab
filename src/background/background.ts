@@ -9,6 +9,11 @@ import {
   syncReplacedTabSuccession,
 } from './succession';
 import {
+  syncAllTabUnloading,
+  syncReplacedTabUnloading,
+  syncWindowUnloading,
+} from './tab-unloader';
+import {
   PALETTE_PORT,
   TOGGLE_PALETTE,
   sendPaletteCommand,
@@ -98,38 +103,70 @@ browser.runtime.onConnect.addListener((port) => {
   });
 });
 
-// Seed the visited set so pre-existing tabs don't flag as unvisited, and
-// rebuild browser-native tab close succession from current tab metadata.
+// Seed the visited set, rebuild tab close succession, and apply the unload policy.
 browser.runtime.onStartup.addListener(() =>
-  track('startup', Promise.all([seed(), syncAllTabSuccession()])),
+  track(
+    'startup',
+    Promise.all([seed(), syncAllTabSuccession(), syncAllTabUnloading()]),
+  ),
 );
 browser.runtime.onInstalled.addListener(() =>
-  track('installed', Promise.all([seed(), syncAllTabSuccession()])),
+  track(
+    'installed',
+    Promise.all([seed(), syncAllTabSuccession(), syncAllTabUnloading()]),
+  ),
 );
 
-// Keep tab activity state and close succession in step with real activity.
+// Keep tab activity, close succession, and automatic unloading in step.
 browser.tabs.onActivated.addListener(({ tabId, windowId }) =>
   track(
     'tab-activated',
     Promise.all([
       markVisited(tabId),
       syncActivatedTabSuccession(tabId, windowId),
+      syncWindowUnloading(windowId),
       browser.tabs.get(tabId).then(setActionPopupForTab),
     ]),
   ),
 );
 browser.tabs.onCreated.addListener((tab) =>
-  track('tab-created', syncCreatedTabSuccession(tab)),
+  track(
+    'tab-created',
+    Promise.all([
+      syncCreatedTabSuccession(tab),
+      tab.windowId == null
+        ? Promise.resolve()
+        : syncWindowUnloading(tab.windowId),
+    ]),
+  ),
 );
 browser.tabs.onDetached.addListener((_tabId, { oldWindowId }) =>
-  track('tab-detached', syncDetachedTabSuccession(oldWindowId)),
+  track(
+    'tab-detached',
+    Promise.all([
+      syncDetachedTabSuccession(oldWindowId),
+      syncWindowUnloading(oldWindowId),
+    ]),
+  ),
 );
 browser.tabs.onAttached.addListener((tabId, { newWindowId }) =>
-  track('tab-attached', syncAttachedTabSuccession(tabId, newWindowId)),
+  track(
+    'tab-attached',
+    Promise.all([
+      syncAttachedTabSuccession(tabId, newWindowId),
+      syncWindowUnloading(newWindowId),
+    ]),
+  ),
 );
 browser.tabs.onRemoved.addListener((tabId) => track('forget', forget(tabId)));
 browser.tabs.onReplaced.addListener((addedTabId) =>
-  track('tab-replaced', syncReplacedTabSuccession(addedTabId)),
+  track(
+    'tab-replaced',
+    Promise.all([
+      syncReplacedTabSuccession(addedTabId),
+      syncReplacedTabUnloading(addedTabId),
+    ]),
+  ),
 );
 browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.url || changeInfo.status === 'complete') {
@@ -147,6 +184,6 @@ browser.action.onClicked.addListener((tab) => {
   track('toggle-palette', toggleForTab(tab));
 });
 
-// Also run on service-worker wake / extension reload.
+// Also restore popup and succession state on service-worker wake / extension reload.
 track('sync-action-popup', syncActiveTabPopup());
 track('sync-succession', syncAllTabSuccession());

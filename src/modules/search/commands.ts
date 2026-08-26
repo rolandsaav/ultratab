@@ -8,6 +8,8 @@ import Pin from '@lucide/svelte/icons/pin';
 import PinOff from '@lucide/svelte/icons/pin-off';
 import Volume2 from '@lucide/svelte/icons/volume-2';
 import VolumeX from '@lucide/svelte/icons/volume-x';
+import Archive from '@lucide/svelte/icons/archive';
+import ArchiveRestore from '@lucide/svelte/icons/archive-restore';
 import SearchIcon from '@lucide/svelte/icons/search';
 import type { RowActions, InlineAction } from '../../shell/list/context';
 import type { Command } from '../../commands/command';
@@ -64,6 +66,22 @@ const reloadTab = action<Item>({
   id: 'reload',
   title: 'Reload Tab',
   icon: RotateCw,
+  do: (tab) => searchApi.reloadTab(tab.id),
+  after: 'stay',
+});
+
+const unloadTab = action<Item>({
+  id: 'unload',
+  title: 'Unload Tab',
+  icon: Archive,
+  do: (tab) => searchApi.unloadTab(tab.id),
+  after: 'stay',
+});
+
+const loadTab = action<Item>({
+  id: 'load',
+  title: 'Load Tab',
+  icon: ArchiveRestore,
   do: (tab) => searchApi.reloadTab(tab.id),
   after: 'stay',
 });
@@ -129,6 +147,12 @@ function pinToggle(item: Item): Command<Item> {
   return pinTab;
 }
 
+function unloadToggle(item: Item): Command<Item> | undefined {
+  if (item.discarded) return loadTab;
+  if (item.active) return undefined;
+  return unloadTab;
+}
+
 type AudioState = 'muted' | 'playing' | 'silent';
 
 function audioState(item: Item): AudioState {
@@ -180,10 +204,12 @@ function inlineActions(item: Item): InlineAction<Item>[] {
 /** A result's actions — the primary runs on Enter, the secondaries fill the panel. */
 export function commandsForItem(item: Item): RowActions<Item> {
   if (item.kind === 'tab') {
+    const unloadStateAction = unloadToggle(item);
     return {
       primary: activateTab,
       inline: inlineActions(item),
       secondary: [
+        ...(unloadStateAction ? [unloadStateAction] : []),
         closeTab,
         copyUrl,
         duplicateTab,

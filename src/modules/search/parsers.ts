@@ -24,6 +24,7 @@ export interface Item {
   muted: boolean;
   audible: boolean;
   pinned: boolean;
+  discarded: boolean;
   /** Tab-only — the currently-focused tab. */
   active: boolean;
 }
@@ -48,6 +49,7 @@ export function parseTab(tab: Tabs.Tab, index: number): Item {
     muted: tab.mutedInfo?.muted ?? false,
     audible: tab.audible ?? false,
     pinned: tab.pinned ?? false,
+    discarded: tab.discarded ?? false,
     active: tab.active ?? false,
   };
 }
@@ -64,6 +66,7 @@ export function parseBookmark(node: Bookmarks.BookmarkTreeNode): Item {
     muted: false,
     audible: false,
     pinned: false,
+    discarded: false,
     active: false,
   };
 }
@@ -80,6 +83,7 @@ export function parseHistory(item: History.HistoryItem): Item {
     muted: false,
     audible: false,
     pinned: false,
+    discarded: false,
     active: false,
   };
 }

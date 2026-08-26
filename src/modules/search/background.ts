@@ -52,6 +52,9 @@ const handlers: SearchApi = {
     await browser.tabs.remove(toTabId(id));
   },
   duplicateTab,
+  async unloadTab(id) {
+    await browser.tabs.discard(toTabId(id));
+  },
   async muteTab(id, muted) {
     await browser.tabs.update(toTabId(id), { muted });
   },
