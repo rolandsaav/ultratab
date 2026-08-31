@@ -7,6 +7,9 @@
 /* Base tokens. Lengths are em off this font-size, so the whole palette scales from here. */
 :root {
   --st-font-size: 16px;
+  --st-font-family:
+    'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    Helvetica, Arial, sans-serif;
   font-size: var(--st-font-size);
   color-scheme: light !important;
 
@@ -47,11 +50,40 @@
   --st-control-icon: 1em;
 }
 
+.tooltip {
+  z-index: 20;
+  padding: 0.45em 0.6em;
+  border: var(--st-border-w) solid var(--st-border);
+  border-radius: 0.5em;
+  background: var(--st-panel-bg);
+  color: var(--st-text);
+  font-family: var(--st-font-family);
+  font-size: 0.75em;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  pointer-events: none;
+  transform-origin: var(--bits-tooltip-content-transform-origin);
+  transition:
+    opacity 0.125s ease-out,
+    transform 0.125s ease-out;
+}
+
+.tooltip[data-state='delayed-open'][data-starting-style] {
+  opacity: 0;
+  transform: scale(0.97);
+}
+
+.tooltip[data-state='instant-open'] {
+  transition-duration: 0s;
+}
+
 /* Transparent document so the page shows through the iframe. */
 html,
 body {
   margin: 0;
   font-size: var(--st-font-size);
+  font-family: var(--st-font-family);
   background: transparent;
 }
 
@@ -77,16 +109,7 @@ body {
   justify-content: center;
   padding-top: 12vh;
   color: var(--st-text);
-  font-family:
-    'Inter',
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    Roboto,
-    Helvetica,
-    Arial,
-    sans-serif;
+  font-family: var(--st-font-family);
 }
 
 /* Keep the palette tall enough for the panel; the list grows or shrinks. */
@@ -256,7 +279,14 @@ body {
   transition:
     opacity 0.08s ease,
     color 0.08s ease,
-    background 0.08s ease;
+    background 0.08s ease,
+    transform 0.08s ease-out;
+}
+
+/* Give search source toggles and result actions immediate press feedback. */
+.source:active,
+.item-action:active {
+  transform: scale(0.97);
 }
 
 /* One glyph size across both clusters. */
@@ -268,6 +298,24 @@ body {
 /* Hidden by default; an action swaps it in while hovered/focused. */
 .control-icon--hover {
   display: none;
+}
+
+.control-icon-stack,
+.control-icon-state {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--st-control-icon);
+  height: var(--st-control-icon);
+}
+
+.control-icon-stack {
+  position: relative;
+}
+
+.control-icon-state {
+  position: absolute;
+  inset: 0;
 }
 
 /* Enabled source toggle: white. */
@@ -653,6 +701,20 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .tooltip {
+    transition: none;
+  }
+
+  .source,
+  .item-action {
+    transition-duration: 0s;
+  }
+
+  .source:active,
+  .item-action:active {
+    transform: none;
+  }
+
   .actions-anchor[data-state] {
     animation: none;
   }

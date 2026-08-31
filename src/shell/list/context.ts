@@ -6,10 +6,14 @@ import type { Command } from '../../commands/command';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- rows hold heterogeneous subjects
 export interface InlineAction<T = any> {
   command: Command<T>;
+  /** Stable identity for a control whose command changes with its state. */
+  slot?: string;
   /** Resting glyph; defaults to the command's icon. Reflects current state. */
   icon?: Component;
   /** Swapped in on hover to preview what a click does. */
   hoverIcon?: Component;
+  /** Animate the icon when this control's state changes. */
+  animateIconChange?: boolean;
   /** Keep visible at rest, not just on hover — for state-indicator actions. */
   persistent?: boolean;
 }

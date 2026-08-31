@@ -18,6 +18,7 @@
   import ActionsPanel from '../../components/ActionsPanel.svelte';
   import { runCommand } from './run';
   import ListItem from './ListItem.svelte';
+  import TooltipButton from '../../components/TooltipButton.svelte';
   import { allActions, hasSecondaryActions, type RowActions } from './context';
 
   const OVERSCAN = 6;
@@ -223,6 +224,10 @@
     get(virtualizer).scrollToIndex(0);
   }
 
+  export function focusInput(): void {
+    inputRef?.focus({ preventScroll: true });
+  }
+
   function openActions(id: string): void {
     const index = indexById.get(id);
     const item = itemAt(index);
@@ -349,14 +354,15 @@
 
   <div class="input-row">
     {#if nav.canPop}
-      <button
+      <TooltipButton
         type="button"
         class="back"
-        aria-label="Back"
+        label="Back"
+        side="bottom"
         onclick={() => nav.pop()}
       >
         <ArrowLeft size={18} />
-      </button>
+      </TooltipButton>
     {/if}
     <input
       bind:this={inputRef}

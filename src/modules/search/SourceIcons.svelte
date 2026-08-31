@@ -1,10 +1,11 @@
 <script lang="ts">
   import { SOURCE_META, SOURCE_ORDER } from './sources';
   import type { Kind, SourceToggles } from './parsers';
+  import TooltipButton from '../../components/TooltipButton.svelte';
 
   interface Props {
     enabled: SourceToggles;
-    onToggle: (kind: Kind) => void;
+    onToggle: (kind: Kind, event: MouseEvent) => void;
   }
 
   let { enabled, onToggle }: Props = $props();
@@ -13,16 +14,15 @@
 <div class="controls">
   {#each SOURCE_ORDER as kind (kind)}
     {@const Icon = SOURCE_META[kind].icon}
-    <button
+    <TooltipButton
       type="button"
-      class="control source"
-      class:enabled={enabled[kind]}
+      class={['control source', enabled[kind] && 'enabled']}
+      label={SOURCE_META[kind].label}
+      side="bottom"
       aria-pressed={enabled[kind]}
-      title={SOURCE_META[kind].label}
-      onmousedown={(e) => e.preventDefault()}
-      onclick={() => onToggle(kind)}
+      onclick={(event) => onToggle(kind, event)}
     >
       <Icon />
-    </button>
+    </TooltipButton>
   {/each}
 </div>

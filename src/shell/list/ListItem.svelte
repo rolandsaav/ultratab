@@ -1,6 +1,9 @@
 <script lang="ts" generics="T">
   import type { Snippet } from 'svelte';
+  import { cubicOut } from 'svelte/easing';
+  import type { TransitionConfig } from 'svelte/transition';
   import type { RowActions } from './context';
+  import TooltipButton from '../../components/TooltipButton.svelte';
 
   interface Props {
     id: string;
@@ -35,6 +38,17 @@
   const hasPersistentAction = $derived(
     actions.inline?.some((action) => action.persistent) ?? false,
   );
+
+  function blurSwap(_: Element): TransitionConfig {
+    const reduceMotion = globalThis.matchMedia?.(
+      '(prefers-reduced-motion: reduce)',
+    ).matches;
+    return {
+      duration: reduceMotion ? 0 : 180,
+      easing: cubicOut,
+      css: (t) => `opacity: ${t}; filter: blur(${(1 - t) * 3}px);`,
+    };
+  }
 </script>
 
 <div
@@ -71,27 +85,39 @@
       {/if}
       {#if actions.inline}
         <div class="controls row-controls">
-          {#each actions.inline as action, i (action.command.id)}
+          {#each actions.inline as action, i (action.slot ?? action.command.id)}
             {@const Icon = action.icon ?? action.command.icon}
-            <button
+            <TooltipButton
               type="button"
-              class="control item-action"
-              class:persistent={action.persistent}
-              title={action.command.title}
-              aria-label={action.command.title}
+              class={['control item-action', action.persistent && 'persistent']}
+              label={action.command.title}
               onclick={(e) => {
                 e.stopPropagation();
                 onRunInline(i);
               }}
             >
-              {#if action.hoverIcon}
+              {#if action.animateIconChange}
+                <span class="control-icon-stack">
+                  {#key action.command.id}
+                    <span class="control-icon-state" transition:blurSwap>
+                      {#if action.hoverIcon}
+                        {@const HoverIcon = action.hoverIcon}
+                        <Icon class="control-icon control-icon--rest" />
+                        <HoverIcon class="control-icon control-icon--hover" />
+                      {:else}
+                        <Icon />
+                      {/if}
+                    </span>
+                  {/key}
+                </span>
+              {:else if action.hoverIcon}
                 {@const HoverIcon = action.hoverIcon}
                 <Icon class="control-icon control-icon--rest" />
                 <HoverIcon class="control-icon control-icon--hover" />
               {:else}
                 <Icon />
               {/if}
-            </button>
+            </TooltipButton>
           {/each}
         </div>
       {/if}
